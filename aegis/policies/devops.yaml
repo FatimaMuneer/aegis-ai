@@ -1,0 +1,58 @@
+# Rules for DevOps agents (shell commands).
+allowed_paths:            # DO-08: absolute paths that are OK to touch
+  - /tmp/aegis-workspace
+blocked_commands:         # DO-01: if the command contains any of these, BLOCK
+  - terraform destroy
+  - mkfs
+  - "dd if="
+  - ":(){"
+  - shutdown
+  - reboot
+  - chmod -r 777
+  - kubectl delete namespace
+  - aws s3 rb
+  - printenv
+secret_patterns:          # DO-03: regex, matched against every argument
+  - '(^|/)\.env(\..+)?$'
+  - 'id_(rsa|ed25519|ecdsa|dsa)'
+  - '(^|/)\.ssh(/|$)'
+  - '\.aws/credentials'
+  - '\.pem$'
+  - '/etc/(shadow|passwd)'
+  - '(^|/)\.netrc$'
+read_commands:            # ALLOW: harmless commands (matched by their start)
+  - ls
+  - pwd
+  - cat
+  - echo
+  - head
+  - tail
+  - grep
+  - wc
+  - date
+  - whoami
+  - df
+  - git status
+  - git log
+  - git diff
+  - git branch
+  - kubectl get
+  - kubectl describe
+  - kubectl logs
+  - terraform plan
+  - terraform validate
+  - docker ps
+  - docker logs
+  - pytest
+  - npm test
+change_commands:          # DO-05: known "change something" commands -> REVIEW
+  - kubectl apply
+  - kubectl delete
+  - kubectl rollout
+  - helm
+  - terraform apply
+  - docker push
+  - git push
+  - npm publish
+  - pip install
+  - deploy

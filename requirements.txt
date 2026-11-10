@@ -1,0 +1,4 @@
+fastapi>=0.110
+uvicorn>=0.29
+sqlglot>=25.0
+pyyaml>=6.0

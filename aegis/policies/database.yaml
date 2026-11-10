@@ -1,0 +1,16 @@
+# Rules for database agents. Edit this file to change behavior. No code needed.
+default_limit: 100        # DB-07: added when a SELECT has no LIMIT
+max_limit: 1000           # DB-07: bigger limits are lowered to default_limit
+blocked_tables:           # DB-05
+  - integration_tokens
+  - salaries
+  - api_keys
+  - secrets
+blocked_columns:          # DB-05
+  - password
+  - password_hash
+  - secret  
+  - api_key
+  - ssn
+  - salary
+  - card_number

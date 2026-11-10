@@ -1,0 +1,48 @@
+# SOC (Security Operations Center) rules for AI response agents. Edit this file, no code needed.
+require_alert_id: true          # SOC-01: no evidence, no action
+read_actions: [enrich_ioc, read_logs, query_siem, get_asset_info]     # always safe
+monitor_actions: [monitor_host, monitor_ip, flag_account]             # watch-only, safe
+response_actions: [block_ip, isolate_host, disable_account, kill_process, quarantine_file, reset_password]
+min_severity:                   # SOC-02: below this, the action is downgraded
+  block_ip: medium
+  isolate_host: high
+  disable_account: high
+  kill_process: medium
+  quarantine_file: medium
+  reset_password: medium
+downgrade:                      # what a too-strong action becomes
+  block_ip: monitor_ip
+  isolate_host: monitor_host
+  disable_account: flag_account
+  kill_process: monitor_host
+  quarantine_file: monitor_host
+  reset_password: flag_account
+max_targets: 10                 # SOC-07: more targets than this needs a human
+default_block_minutes: 60       # SOC-09: every IP block must expire
+max_block_minutes: 1440
+never_block:                    # SOC-03: the company's own networks and DNS
+  - 10.0.0.0/8
+  - 192.168.0.0/16
+  - 172.16.0.0/12
+  - 127.0.0.0/8
+  - 8.8.8.8/32
+  - 1.1.1.1/32
+protected_accounts: [ceo, cfo, admin, administrator, root, svc-backup]   # SOC-06
+injection_phrases:              # SOC-08: attacker text hidden in logs/alerts
+  - ignore previous
+  - ignore the rules
+  - ignore all rules
+  - ignore your instructions
+  - disregard
+  - system prompt
+  - you are now
+  - override policy
+  - disable all
+  - delete all
+  - do not log
+assets:                         # a fake company inventory
+  srv-dc-01:   {criticality: critical, users: 340,  role: domain controller}
+  srv-db-prod: {criticality: critical, users: 1200, role: production database}
+  srv-web-02:  {criticality: high,     users: 800,  role: public website}
+  laptop-17:   {criticality: low,      users: 1,    role: employee laptop}
+  laptop-22:   {criticality: low,      users: 1,    role: employee laptop}
