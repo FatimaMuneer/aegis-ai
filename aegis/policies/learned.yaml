@@ -1,0 +1,3 @@
+# Rules that a human approved. aegis/learn.py adds rules here (python -m aegis.learn add ...).
+# A learned rule can only skip a "needs approval" (REVIEW) step. It can never override a BLOCK.
+rules: []

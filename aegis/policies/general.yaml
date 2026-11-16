@@ -1,0 +1,9 @@
+# Engine-wide settings. Edit this file, no code needed.
+# These apply to every kind of action (sql, shell, soc).
+block_at: CRITICAL        # risk level at which the engine blocks on its own (LOW/MEDIUM/HIGH/CRITICAL)
+use_ai_risk: false        # true = also ask an AI model for a second opinion (needs ANTHROPIC_API_KEY)
+behaviour:
+  loop_limit: 3           # same action this many times in a row = loop -> BLOCK
+  spike_factor: 3.0       # one action using more than 3x the usual tokens is logged as TOKEN_SPIKE
+  token_budget: 50000     # total tokens one agent may use
+  cost_budget: 5.0        # total money (USD) one agent may spend

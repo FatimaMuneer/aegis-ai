@@ -11,7 +11,7 @@ Every agent action goes through Engine.evaluate(). The order is:
 import importlib
 from dataclasses import replace
 
-from . import dryrun, learn, risk
+from . import dryrun, learn, policy, risk
 from .audit import AuditLog
 from .behavior import BehaviourMonitor
 from .models import Decision, Verdict
@@ -44,21 +44,26 @@ def is_blocked(decision) -> bool:
     return verdict_name(decision) in BLOCK_NAMES
 
 
+# kind -> (module, function, policy file). Each guard is called as function(action, policy_dict).
+GUARD_FUNCTIONS = {
+    "sql": ("db_guard", "check_sql", "database"),
+    "db": ("db_guard", "check_sql", "database"),
+    "shell": ("ops_guard", "check_command", "devops"),
+    "ops": ("ops_guard", "check_command", "devops"),
+    "devops": ("ops_guard", "check_command", "devops"),
+    "soc": ("soc_guard", "check_soc", "soc"),
+}
+
+
 def call_guard(kind: str, action: str):
     """ADAPTER: the one place that calls Person A's guard files.
-    If a guard's function has another name, change the list below."""
-    module_name = GUARDS.get(kind)
-    if not module_name:
+    Each guard needs (action, policy), so we load the matching YAML policy here."""
+    spec = GUARD_FUNCTIONS.get(kind)
+    if not spec:
         return None
-    try:
-        module = importlib.import_module(f"aegis.{module_name}")
-    except ImportError:
-        return None
-    for function_name in ("check", "evaluate", "inspect"):
-        function = getattr(module, function_name, None)
-        if callable(function):
-            return function(action)
-    return None
+    module_name, function_name, policy_name = spec
+    module = importlib.import_module(f"aegis.{module_name}")   # a missing package should be loud
+    return getattr(module, function_name)(action, policy.load(policy_name))
 
 
 class Engine:

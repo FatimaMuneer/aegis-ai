@@ -2,3 +2,14 @@ fastapi>=0.110
 uvicorn>=0.29
 sqlglot>=25.0
 pyyaml>=6.0
+
+# testing
+pytest>=8.0
+httpx>=0.27
+
+# evaluation charts
+matplotlib>=3.8
+
+# optional
+# anthropic     (AI second opinion in aegis/risk.py)
+# langgraph     (scripts/langgraph_agent.py)
