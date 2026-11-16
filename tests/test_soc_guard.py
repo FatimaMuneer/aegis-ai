@@ -38,6 +38,25 @@ def test_soc(action, verdict, rule):
     assert (d.verdict.value, d.rule) == (verdict, rule)
 
 
+@pytest.mark.parametrize("target", [
+    None,
+    "",
+    "   ",
+    [],
+    [""],
+    ["laptop-17", None],
+    42,
+    {"host": "laptop-17"},
+])
+def test_response_action_rejects_invalid_target(target):
+    decision = check_soc(
+        act(action="isolate_host", target=target, alert_id="A-1", severity="high"),
+        P
+    )
+    assert decision.verdict.value == "REVIEW"
+    assert decision.rule == "SOC-10"
+
+
 def test_impact_preview_mentions_users():
     d = check_soc(act(action="isolate_host", target="srv-dc-01", alert_id="A-1", severity="high"), P)
     assert "340" in d.reason

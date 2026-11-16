@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AEGIS Dashboard</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --line:#334155;
+          --allow:#22c55e; --correct:#3b82f6; --review:#f59e0b; --block:#ef4444; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); }
+  header { padding:16px 24px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+  h1 { margin:0; font-size:20px; } h2 { margin:0 0 12px; font-size:15px; color:var(--muted); font-weight:600; }
+  main { padding:24px; display:grid; gap:20px; max-width:1200px; margin:auto; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; }
+  .stat b { display:block; font-size:28px; } .stat span { color:var(--muted); font-size:13px; }
+  .ALLOW{color:var(--allow)} .CORRECT{color:var(--correct)} .REVIEW{color:var(--review)} .BLOCK{color:var(--block)}
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  td.action { font-family:ui-monospace,monospace; word-break:break-all; max-width:380px; }
+  .scroll { overflow-x:auto; }
+  select,input,textarea,button { background:#0b1220; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:8px; font:inherit; }
+  textarea { width:100%; min-height:70px; font-family:ui-monospace,monospace; }
+  button { cursor:pointer; background:#2563eb; border-color:#2563eb; } button.small { padding:3px 8px; font-size:12px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+  .pill { padding:3px 10px; border-radius:999px; font-size:12px; border:1px solid currentColor; }
+  pre { white-space:pre-wrap; margin:8px 0 0; font-size:13px; }
+  .muted { color:var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>AEGIS <span class="muted" style="font-weight:400">accountability layer for AI agents</span></h1>
+  <div><span id="integrity" class="pill muted">checking log...</span>
+       <button class="small" onclick="verifyLog()">Verify log</button></div>
+</header>
+<main>
+  <section class="card"><h2>Overview</h2><div class="stats" id="stats"></div></section>
+
+  <section class="card">
+    <h2>Try an action</h2>
+    <div class="row">
+      <select id="kind"><option>sql</option><option>shell</option><option>soc</option></select>
+      <input id="agent" value="dashboard" placeholder="agent name">
+      <button onclick="send()">Check it</button>
+    </div>
+    <textarea id="action" placeholder="SELECT * FROM orders"></textarea>
+    <pre id="result" class="muted">The decision will appear here.</pre>
+  </section>
+
+  <section class="card"><h2>Waiting for a human</h2>
+    <div class="scroll"><table><thead><tr><th>#</th><th>Kind</th><th>Rule</th><th>Action</th><th>Why</th><th></th></tr></thead>
+    <tbody id="pending"></tbody></table></div>
+  </section>
+
+  <section class="card"><h2>Audit log (newest first)</h2>
+    <div class="row"><select id="filter" onchange="load()">
+      <option value="">all verdicts</option><option>ALLOW</option><option>CORRECT</option><option>REVIEW</option><option>BLOCK</option><option>HUMAN_APPROVED</option></select></div>
+    <div class="scroll"><table><thead><tr><th>#</th><th>Time</th><th>Agent</th><th>Verdict</th><th>Rule</th><th>Risk</th><th>Action</th></tr></thead>
+    <tbody id="log"></tbody></table></div>
+  </section>
+
+  <section class="card"><h2>Suggested rules (from repeated approvals)</h2>
+    <div id="suggestions" class="muted">Nothing yet.</div></section>
+</main>
+
+<script>
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const api = (path, opts) => fetch(path, opts).then(r => r.json());
+const post = (path, body) => api(path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+
+async function load() {
+  const [stats, log, pend, sug] = await Promise.all([
+    api("/stats"), api("/audit?limit=100&verdict=" + encodeURIComponent(document.getElementById("filter").value)),
+    api("/pending"), api("/learn/suggestions")]);
+
+  const v = stats.verdicts || {};
+  document.getElementById("stats").innerHTML =
+    `<div class="stat"><b>${stats.total}</b><span>total decisions</span></div>` +
+    ["ALLOW","CORRECT","REVIEW","BLOCK"].map(k => `<div class="stat"><b class="${k}">${v[k] || 0}</b><span>${k}</span></div>`).join("");
+
+  const pill = document.getElementById("integrity");
+  pill.textContent = stats.log_intact ? "log intact" : "LOG TAMPERED";
+  pill.style.color = stats.log_intact ? "var(--allow)" : "var(--block)";
+
+  document.getElementById("log").innerHTML = log.entries.map(e =>
+    `<tr><td>${e.seq}</td><td>${esc((e.ts||"").replace("T"," ").slice(0,19))}</td><td>${esc(e.agent)}</td>
+     <td class="${esc(e.verdict)}">${esc(e.verdict)}</td><td>${esc(e.rule)}</td><td>${esc(e.risk)}</td>
+     <td class="action">${esc(e.original)}</td></tr>`).join("") || `<tr><td colspan="7" class="muted">No entries.</td></tr>`;
+
+  document.getElementById("pending").innerHTML = pend.entries.map(e =>
+    `<tr><td>${e.seq}</td><td>${esc(e.kind)}</td><td>${esc(e.rule)}</td><td class="action">${esc(e.original)}</td>
+     <td>${esc(e.reason)}</td>
+     <td>
+       <button class="small" data-a="${esc(e.original)}" data-k="${esc(e.kind)}" data-g="${esc(e.agent)}" onclick="approve(this)">Approve</button>
+       <button class="small" data-a="${esc(e.original)}" data-k="${esc(e.kind)}" data-g="${esc(e.agent)}" onclick="rejectReview(this)">Reject</button>
+     </td></tr>`
+  ).join("") || `<tr><td colspan="6" class="muted">Nothing is waiting.</td></tr>`;
+
+  document.getElementById("suggestions").innerHTML = sug.suggestions.length
+    ? sug.suggestions.map(s => `<div style="margin-bottom:8px">Approved ${s.approved_times}x: <code>${esc(s.example)}</code>
+        <button class="small" data-p="${esc(s.pattern)}" onclick="addRule(this)">Add rule</button></div>`).join("")
+    : "Nothing yet.";
+}
+
+async function send() {
+  const out = document.getElementById("result");
+  const d = await post("/evaluate", {action: document.getElementById("action").value,
+    kind: document.getElementById("kind").value, agent: document.getElementById("agent").value || "dashboard"});
+  out.className = "";
+  out.innerHTML = `<b class="${esc(d.verdict)}">${esc(d.verdict)}</b>  rule ${esc(d.rule)}  risk ${esc(d.risk)}\n${esc(d.reason)}` +
+                  (d.corrected ? `\nSafe version: ${esc(d.corrected)}` : "");
+  load();
+}
+async function approve(btn) {
+  await post("/approve", {action: btn.dataset.a, kind: btn.dataset.k, agent: btn.dataset.g});
+  load();
+}
+async function rejectReview(btn) {
+  if (!confirm("Reject this action? It will not be executed.")) return;
+  await post("/reject", {action: btn.dataset.a, kind: btn.dataset.k, agent: btn.dataset.g});
+  load();
+}
+async function addRule(btn) {
+  const reason = prompt("Why is this always okay?"); if (!reason) return;
+  await post("/learn/rules", {pattern: btn.dataset.p, reason}); load();
+}
+async function verifyLog() { const r = await api("/audit/verify"); alert((r.intact ? "OK: " : "PROBLEM: ") + r.message); load(); }
+
+load(); setInterval(load, 5000);
+</script>
+</body>
+</html>

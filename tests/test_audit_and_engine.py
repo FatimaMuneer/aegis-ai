@@ -61,9 +61,12 @@ def test_soc_action_goes_through_soc_guard(engine):
     assert d.verdict.value == "BLOCK" and d.rule == "SOC-06"
 
 
-def test_unknown_kind_is_allowed_with_no_rule(engine):
+def test_unknown_kind_requires_review(engine):
     d = engine.evaluate("hello", kind="other")
-    assert d.verdict.value == "ALLOW" and d.rule == "ENG-00"
+
+    assert d.verdict.value == "REVIEW"
+    assert d.rule == "ENG-01"
+    assert "Unsupported action kind" in d.reason
 
 
 def test_every_decision_is_logged(engine):

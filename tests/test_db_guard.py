@@ -33,6 +33,18 @@ def test_sql(sql, expected):
     assert check_sql(sql, P).verdict.value == expected
 
 
+@pytest.mark.parametrize("sql", [
+    "SELECT * FROM orders LIMIT -1",
+    "SELECT * FROM orders LIMIT ?",
+    "SELECT * FROM orders LIMIT 10 + 5",
+])
+def test_unsafe_limit_is_replaced(sql):
+    decision = check_sql(sql, P)
+    assert decision.verdict.value == "CORRECT"
+    assert decision.corrected.endswith("LIMIT 100")
+    assert check_sql(decision.corrected, P).verdict.value == "ALLOW"
+
+
 def test_correction_adds_limit():
     d = check_sql("SELECT * FROM orders", P)
     assert d.corrected.endswith("LIMIT 100")

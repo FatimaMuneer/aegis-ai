@@ -16,6 +16,7 @@ Use it (point your agent's MCP config at this command instead of the real server
     python -m aegis.cli proxy -- npx -y some-mcp-server
 """
 import json
+import queue
 import subprocess
 import sys
 import threading
@@ -58,8 +59,34 @@ def inspect_request(engine: Engine, message: dict, agent: str = "mcp"):
     if message.get("method") != "tools/call":
         return message, None
 
-    params = message.get("params") or {}
-    tool, arguments = params.get("name", ""), params.get("arguments") or {}
+    def reject_invalid_request(reason):
+        return None, {
+            "jsonrpc": "2.0",
+            "id": message.get("id"),
+            "error": {
+                "code": -32602,
+                "message": f"Invalid MCP tool request: {reason}",
+            },
+        }
+
+    params = message.get("params")
+    if not isinstance(params, dict):
+        return reject_invalid_request("params must be an object")
+
+    tool = params.get("name")
+    if not isinstance(tool, str) or not tool.strip():
+        return reject_invalid_request("tool name must be a non-empty string")
+
+    arguments = params.get("arguments", {})
+    if not isinstance(arguments, dict):
+        return reject_invalid_request("arguments must be an object")
+
+    for key in SQL_ARGS + SHELL_ARGS:
+        if key in arguments and not isinstance(arguments[key], str):
+            return reject_invalid_request(
+                f"argument '{key}' must be a string"
+            )
+
     kind, action, arg_name = classify(tool, arguments)
     decision = engine.evaluate(action, kind=kind, agent=agent)
     verdict = verdict_name(decision)
@@ -86,37 +113,110 @@ def inspect_request(engine: Engine, message: dict, agent: str = "mcp"):
 
 
 def run_proxy(command: list, engine: Engine, agent: str = "mcp") -> int:
-    """Start the real MCP server and relay messages in both directions."""
-    server = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                              text=True, bufsize=1)
+    """Start an MCP server and safely relay messages in both directions."""
+    server = subprocess.Popen(
+        command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        text=True,
+        bufsize=1,
+    )
     write_lock = threading.Lock()
+    incoming = queue.Queue()
+    stopped = object()
 
     def to_agent(text: str):
         with write_lock:
-            sys.stdout.write(text if text.endswith("\n") else text + "\n")
+            sys.stdout.write(text if text.endswith("\\n") else text + "\\n")
             sys.stdout.flush()
 
     def pump_server_to_agent():
-        for line in server.stdout:
-            to_agent(line)
-
-    threading.Thread(target=pump_server_to_agent, daemon=True).start()
-
-    for line in sys.stdin:                                # agent -> server
-        if not line.strip():
-            continue
         try:
-            message = json.loads(line)
-        except ValueError:
-            server.stdin.write(line)                      # not JSON: not ours to judge
-            server.stdin.flush()
-            continue
-        forward, reply = inspect_request(engine, message, agent) if isinstance(message, dict) else (message, None)
-        if reply is not None:
-            to_agent(json.dumps(reply))
-        if forward is not None:
-            server.stdin.write(json.dumps(forward) + "\n")
-            server.stdin.flush()
+            for line in server.stdout:
+                to_agent(line)
+        except (BrokenPipeError, OSError):
+            pass
 
-    server.stdin.close()
-    return server.wait()
+    def read_agent_input():
+        try:
+            for line in sys.stdin:
+                incoming.put(line)
+        finally:
+            incoming.put(stopped)
+
+    output_thread = threading.Thread(target=pump_server_to_agent, daemon=True)
+    input_thread = threading.Thread(target=read_agent_input, daemon=True)
+    output_thread.start()
+    input_thread.start()
+
+    return_code = 1
+
+    try:
+        while server.poll() is None:
+            try:
+                line = incoming.get(timeout=0.1)
+            except queue.Empty:
+                continue
+
+            if line is stopped:
+                break
+            if not line.strip():
+                continue
+
+            try:
+                message = json.loads(line)
+            except (ValueError, TypeError):
+                to_agent(json.dumps({
+                    "jsonrpc": "2.0",
+                    "id": None,
+                    "error": {
+                        "code": -32700,
+                        "message": "Parse error: invalid JSON",
+                    },
+                }))
+                continue
+
+            if not isinstance(message, dict):
+                to_agent(json.dumps({
+                    "jsonrpc": "2.0",
+                    "id": None,
+                    "error": {
+                        "code": -32600,
+                        "message": "Invalid JSON-RPC request: expected an object",
+                    },
+                }))
+                continue
+
+            forward, reply = inspect_request(engine, message, agent)
+
+            if reply is not None:
+                to_agent(json.dumps(reply))
+
+            if forward is not None:
+                try:
+                    server.stdin.write(json.dumps(forward) + "\\n")
+                    server.stdin.flush()
+                except (BrokenPipeError, OSError, ValueError):
+                    break
+
+    except KeyboardInterrupt:
+        pass
+    finally:
+        try:
+            server.stdin.close()
+        except (BrokenPipeError, OSError, ValueError):
+            pass
+
+        try:
+            return_code = server.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            server.terminate()
+            try:
+                return_code = server.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                server.kill()
+                return_code = server.wait()
+
+        output_thread.join(timeout=1)
+
+    return return_code

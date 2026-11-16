@@ -53,21 +53,39 @@ def check_sql(sql: str, policy: dict, _recheck: bool = False) -> Decision:
         default = int(policy.get("default_limit", 100))
         maximum = int(policy.get("max_limit", 1000))
         limit = stmt.args.get("limit")
-        too_big = False
+        unsafe_limit = False
         if limit is not None:
-            try:
-                too_big = int(limit.expression.name) > maximum
-            except (ValueError, AttributeError):
-                too_big = False
-        if limit is None or too_big:
+            expression = limit.expression
+            is_plain_integer = (
+                isinstance(expression, exp.Literal)
+                and not expression.is_string
+                and str(expression.this).isdigit()
+            )
+            if is_plain_integer:
+                unsafe_limit = int(expression.this) > maximum
+            else:
+                unsafe_limit = True
+
+        if limit is None or unsafe_limit:
             fixed = stmt.limit(default, copy=True).sql()
             if _recheck:
                 return _d(Verdict.REVIEW, "DB-07", "Could not fix the query safely.", original)
-            again = check_sql(fixed, policy, _recheck=True)   # verified correction
+            again = check_sql(fixed, policy, _recheck=True)
             if again.verdict != Verdict.ALLOW:
                 return _d(Verdict.REVIEW, "DB-07", "The fixed query failed its re-check.", original)
-            why = "No row limit." if limit is None else f"Limit above {maximum}."
-            return _d(Verdict.CORRECT, "DB-07", f"{why} Rewritten with LIMIT {default}.", original, fixed, risk="LOW")
+
+            if limit is None:
+                why = "No row limit."
+            elif not is_plain_integer:
+                why = "Limit is not a plain non-negative integer."
+            else:
+                why = f"Limit above {maximum}."
+
+            return _d(
+                Verdict.CORRECT, "DB-07",
+                f"{why} Rewritten with LIMIT {default}.",
+                original, fixed, risk="LOW"
+            )
         return _d(Verdict.ALLOW, "DB-00", "Read-only query within limits.", original)
 
     return _d(Verdict.REVIEW, "DB-00", f"Unknown statement type '{kind}', so a human must look.", original, risk="MEDIUM")
