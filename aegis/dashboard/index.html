@@ -1,123 +1,1056 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AEGIS Dashboard</title>
-<style>
-  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --line:#334155;
-          --allow:#22c55e; --correct:#3b82f6; --review:#f59e0b; --block:#ef4444; }
-  * { box-sizing: border-box; }
-  body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); }
-  header { padding:16px 24px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
-  h1 { margin:0; font-size:20px; } h2 { margin:0 0 12px; font-size:15px; color:var(--muted); font-weight:600; }
-  main { padding:24px; display:grid; gap:20px; max-width:1200px; margin:auto; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
-  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; }
-  .stat b { display:block; font-size:28px; } .stat span { color:var(--muted); font-size:13px; }
-  .ALLOW{color:var(--allow)} .CORRECT{color:var(--correct)} .REVIEW{color:var(--review)} .BLOCK{color:var(--block)}
-  table { width:100%; border-collapse:collapse; font-size:13px; }
-  th,td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
-  td.action { font-family:ui-monospace,monospace; word-break:break-all; max-width:380px; }
-  .scroll { overflow-x:auto; }
-  select,input,textarea,button { background:#0b1220; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:8px; font:inherit; }
-  textarea { width:100%; min-height:70px; font-family:ui-monospace,monospace; }
-  button { cursor:pointer; background:#2563eb; border-color:#2563eb; } button.small { padding:3px 8px; font-size:12px; }
-  .row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
-  .pill { padding:3px 10px; border-radius:999px; font-size:12px; border:1px solid currentColor; }
-  pre { white-space:pre-wrap; margin:8px 0 0; font-size:13px; }
-  .muted { color:var(--muted); }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGIS — AI Security Operator</title>
+    <link rel="stylesheet" href="/dashboard/style.css">
 </head>
+
 <body>
-<header>
-  <h1>AEGIS <span class="muted" style="font-weight:400">accountability layer for AI agents</span></h1>
-  <div><span id="integrity" class="pill muted">checking log...</span>
-       <button class="small" onclick="verifyLog()">Verify log</button></div>
-</header>
-<main>
-  <section class="card"><h2>Overview</h2><div class="stats" id="stats"></div></section>
+<div class="app">
 
-  <section class="card">
-    <h2>Try an action</h2>
-    <div class="row">
-      <select id="kind"><option>sql</option><option>shell</option><option>soc</option></select>
-      <input id="agent" value="dashboard" placeholder="agent name">
-      <button onclick="send()">Check it</button>
-    </div>
-    <textarea id="action" placeholder="SELECT * FROM orders"></textarea>
-    <pre id="result" class="muted">The decision will appear here.</pre>
-  </section>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
 
-  <section class="card"><h2>Waiting for a human</h2>
-    <div class="scroll"><table><thead><tr><th>#</th><th>Kind</th><th>Rule</th><th>Action</th><th>Why</th><th></th></tr></thead>
-    <tbody id="pending"></tbody></table></div>
-  </section>
+        <div class="brand">
+            <div class="brand-mark">A</div>
+            <div>
+                <div class="brand-name">AEGIS</div>
+                <div class="brand-subtitle">AI SECURITY SYSTEM</div>
+            </div>
+        </div>
 
-  <section class="card"><h2>Audit log (newest first)</h2>
-    <div class="row"><select id="filter" onchange="load()">
-      <option value="">all verdicts</option><option>ALLOW</option><option>CORRECT</option><option>REVIEW</option><option>BLOCK</option><option>HUMAN_APPROVED</option></select></div>
-    <div class="scroll"><table><thead><tr><th>#</th><th>Time</th><th>Agent</th><th>Verdict</th><th>Rule</th><th>Risk</th><th>Action</th></tr></thead>
-    <tbody id="log"></tbody></table></div>
-  </section>
+        <div class="sidebar-section">
+            <div class="sidebar-label">WORKSPACE</div>
 
-  <section class="card"><h2>Suggested rules (from repeated approvals)</h2>
-    <div id="suggestions" class="muted">Nothing yet.</div></section>
-</main>
+            <button class="nav-item active" id="newSession" type="button">
+                <span>＋</span> New session
+            </button>
+
+            <button class="nav-item" id="operationsLink" type="button">
+                <span>▦</span> Operations dashboard
+            </button>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">SYSTEM</div>
+
+            <div class="nav-item"><span>◈</span> Security engine</div>
+            <div class="nav-item"><span>⌘</span> Agent control</div>
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="system-status-card">
+
+                <div class="status-card-heading">
+                    <span class="status-card-label">SYSTEM STATUS</span>
+                    <span class="status-live">LIVE</span>
+                </div>
+
+                <div class="status-card-connection">
+                    <span class="connection-dot" id="connectionDot"></span>
+                    <span id="connectionStatus">Connecting...</span>
+                </div>
+
+                <div class="status-card-divider"></div>
+
+                <div class="status-card-instance">
+                    <span class="instance-icon">◈</span>
+                    <span>AEGIS LOCAL INSTANCE</span>
+                </div>
+
+            </div>
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN INTERFACE -->
+    <main class="main">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <button
+                    class="sidebar-toggle"
+                    id="sidebarToggle"
+                    type="button"
+                    aria-label="Hide sidebar"
+                    title="Hide sidebar"
+                >
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <span class="topbar-label">AUTONOMOUS AI CONTROL</span>
+
+            </div>
+
+            <div class="topbar-right">
+
+                <button
+                    class="speaker-toggle"
+                    id="speakerToggle"
+                    type="button"
+                    aria-pressed="true"
+                    title="Turn voice responses off"
+                >
+                    <span class="speaker-icon">◖))</span>
+                    <span id="speakerLabel">VOICE ON</span>
+                </button>
+
+                <span class="system-label">SYSTEM ONLINE</span>
+                <span class="topbar-dot"></span>
+
+            </div>
+
+        </header>
+
+
+        <!-- WELCOME SCREEN -->
+        <section class="welcome" id="welcomeScreen">
+
+            <div class="welcome-eyebrow">
+                INTELLIGENT OVERSIGHT · HUMAN ACCOUNTABILITY
+            </div>
+
+            <h1>Good to have you here.</h1>
+
+            <p class="welcome-description">
+                I am AEGIS. Your control layer for monitoring,
+                evaluating, and governing AI-driven actions.
+            </p>
+
+            <div class="orb-container" id="orb">
+                <div class="orb-glow"></div>
+                <div class="orb-ring"></div>
+                <div class="orb-core"></div>
+            </div>
+
+            <div class="orb-status" id="orbStatus">
+                AEGIS IS STANDING BY
+            </div>
+
+            <div class="suggestions">
+
+                <button class="suggestion" type="button"
+                    data-prompt="Show system statistics">
+                    Show system statistics
+                </button>
+
+                <button class="suggestion" type="button"
+                    data-prompt="Check pending reviews">
+                    Check pending reviews
+                </button>
+
+                <button class="suggestion" type="button"
+                    data-prompt="Verify audit integrity">
+                    Verify audit integrity
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- CHAT SCREEN -->
+        <section class="chat-screen" id="chatScreen" hidden>
+
+            <div class="messages" id="messages"></div>
+
+            <div class="orb-container chat-orb" id="chatOrb">
+                <div class="orb-glow"></div>
+                <div class="orb-ring"></div>
+                <div class="orb-core"></div>
+            </div>
+
+            <div class="orb-status" id="chatOrbStatus">
+                AEGIS IS STANDING BY
+            </div>
+
+        </section>
+
+
+        <!-- COMMAND CONSOLE -->
+        <footer class="command-area">
+
+            <form class="command-box" id="chatForm">
+
+                <input
+                    type="text"
+                    id="messageInput"
+                    class="command-input"
+                    placeholder="Message AEGIS..."
+                    autocomplete="off"
+                    aria-label="Message AEGIS"
+                    required
+                >
+
+                <div class="command-actions">
+
+                    <button
+                        class="icon-button"
+                        id="micButton"
+                        type="button"
+                        title="Start voice input"
+                        aria-label="Start voice input"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="9" y="2" width="6" height="13" rx="3"/>
+                            <path d="M5 11a7 7 0 0 0 14 0"/>
+                            <path d="M12 18v4"/>
+                            <path d="M8 22h8"/>
+                        </svg>
+                    </button>
+
+                    <button
+                        class="send-button"
+                        id="sendButton"
+                        type="submit"
+                        aria-label="Send message"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 19V5"/>
+                            <path d="m5 12 7-7 7 7"/>
+                        </svg>
+                    </button>
+
+                </div>
+
+            </form>
+
+            <div class="command-note">
+                <span class="note-indicator"></span>
+                AEGIS evaluates requests through its configured control engine.
+                Actions remain subject to system policy.
+            </div>
+
+        </footer>
+
+
+        <!-- FOCUSED SCREEN MICROPHONE -->
+        <button
+            class="focus-mic-button"
+            id="focusMicButton"
+            type="button"
+            title="Start voice input"
+            aria-label="Start voice input"
+        >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="9" y="2" width="6" height="13" rx="3"/>
+                <path d="M5 11a7 7 0 0 0 14 0"/>
+                <path d="M12 18v4"/>
+                <path d="M8 22h8"/>
+            </svg>
+        </button>
+
+    </main>
+
+</div>
 
 <script>
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const api = (path, opts) => fetch(path, opts).then(r => r.json());
-const post = (path, body) => api(path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
 
-async function load() {
-  const [stats, log, pend, sug] = await Promise.all([
-    api("/stats"), api("/audit?limit=100&verdict=" + encodeURIComponent(document.getElementById("filter").value)),
-    api("/pending"), api("/learn/suggestions")]);
+// ==================================================
+// AEGIS — CHAT INTERACTION ENGINE
+// ==================================================
 
-  const v = stats.verdicts || {};
-  document.getElementById("stats").innerHTML =
-    `<div class="stat"><b>${stats.total}</b><span>total decisions</span></div>` +
-    ["ALLOW","CORRECT","REVIEW","BLOCK"].map(k => `<div class="stat"><b class="${k}">${v[k] || 0}</b><span>${k}</span></div>`).join("");
 
-  const pill = document.getElementById("integrity");
-  pill.textContent = stats.log_intact ? "log intact" : "LOG TAMPERED";
-  pill.style.color = stats.log_intact ? "var(--allow)" : "var(--block)";
+// ELEMENT REFERENCES
+const welcomeScreen = document.getElementById("welcomeScreen");
+const chatScreen = document.getElementById("chatScreen");
+const messages = document.getElementById("messages");
 
-  document.getElementById("log").innerHTML = log.entries.map(e =>
-    `<tr><td>${e.seq}</td><td>${esc((e.ts||"").replace("T"," ").slice(0,19))}</td><td>${esc(e.agent)}</td>
-     <td class="${esc(e.verdict)}">${esc(e.verdict)}</td><td>${esc(e.rule)}</td><td>${esc(e.risk)}</td>
-     <td class="action">${esc(e.original)}</td></tr>`).join("") || `<tr><td colspan="7" class="muted">No entries.</td></tr>`;
+const messageInput = document.getElementById("messageInput");
+const chatForm = document.getElementById("chatForm");
+const sendButton = document.getElementById("sendButton");
 
-  document.getElementById("pending").innerHTML = pend.entries.map(e =>
-    `<tr><td>${e.seq}</td><td>${esc(e.kind)}</td><td>${esc(e.rule)}</td><td class="action">${esc(e.original)}</td>
-     <td>${esc(e.reason)}</td>
-     <td><button class="small" data-a="${esc(e.original)}" data-k="${esc(e.kind)}" data-g="${esc(e.agent)}" onclick="approve(this)">Approve</button></td></tr>`
-  ).join("") || `<tr><td colspan="6" class="muted">Nothing is waiting.</td></tr>`;
+const micButton = document.getElementById("micButton");
+const focusMicButton = document.getElementById("focusMicButton");
 
-  document.getElementById("suggestions").innerHTML = sug.suggestions.length
-    ? sug.suggestions.map(s => `<div style="margin-bottom:8px">Approved ${s.approved_times}x: <code>${esc(s.example)}</code>
-        <button class="small" data-p="${esc(s.pattern)}" onclick="addRule(this)">Add rule</button></div>`).join("")
-    : "Nothing yet.";
+const speakerToggle = document.getElementById("speakerToggle");
+const speakerLabel = document.getElementById("speakerLabel");
+
+const connectionStatus = document.getElementById("connectionStatus");
+const connectionDot = document.getElementById("connectionDot");
+
+const orb = document.getElementById("orb");
+const orbStatus = document.getElementById("orbStatus");
+
+const chatOrb = document.getElementById("chatOrb");
+const chatOrbStatus = document.getElementById("chatOrbStatus");
+
+const app = document.querySelector(".app");
+const sidebarToggle = document.getElementById("sidebarToggle");
+
+
+// ==================================================
+// APPLICATION STATE
+// ==================================================
+
+let voiceResponsesEnabled = true;
+let currentUtterance = null;
+let isSending = false;
+
+let recognition = null;
+let isListening = false;
+let voiceFinalTranscript = "";
+let discardVoiceResult = false;
+
+
+// ==================================================
+// ORB STATE
+// ==================================================
+
+function setOrbState(state) {
+
+    [orb, chatOrb].forEach(element => {
+
+        if (!element) return;
+
+        element.classList.remove(
+            "listening",
+            "speaking",
+            "processing"
+        );
+
+        if (state !== "idle") {
+            element.classList.add(state);
+        }
+
+    });
+
+    const labels = {
+        idle: "AEGIS IS STANDING BY",
+        listening: "LISTENING",
+        processing: "PROCESSING REQUEST",
+        speaking: "RESPONDING"
+    };
+
+    orbStatus.textContent = labels[state] || labels.idle;
+    chatOrbStatus.textContent = labels[state] || labels.idle;
+
 }
 
-async function send() {
-  const out = document.getElementById("result");
-  const d = await post("/evaluate", {action: document.getElementById("action").value,
-    kind: document.getElementById("kind").value, agent: document.getElementById("agent").value || "dashboard"});
-  out.className = "";
-  out.innerHTML = `<b class="${esc(d.verdict)}">${esc(d.verdict)}</b>  rule ${esc(d.rule)}  risk ${esc(d.risk)}\n${esc(d.reason)}` +
-                  (d.corrected ? `\nSafe version: ${esc(d.corrected)}` : "");
-  load();
-}
-async function approve(btn) { await post("/approve", {action: btn.dataset.a, kind: btn.dataset.k, agent: btn.dataset.g}); load(); }
-async function addRule(btn) {
-  const reason = prompt("Why is this always okay?"); if (!reason) return;
-  await post("/learn/rules", {pattern: btn.dataset.p, reason}); load();
-}
-async function verifyLog() { const r = await api("/audit/verify"); alert((r.intact ? "OK: " : "PROBLEM: ") + r.message); load(); }
 
-load(); setInterval(load, 5000);
+// ==================================================
+// SPEECH OUTPUT
+// ==================================================
+
+function stopSpeech() {
+
+    if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+    }
+
+    currentUtterance = null;
+
+}
+
+
+function speakResponse(text) {
+
+    if (!voiceResponsesEnabled) {
+        setOrbState("idle");
+        return;
+    }
+
+    if (!("speechSynthesis" in window)) {
+        setOrbState("idle");
+        return;
+    }
+
+    const cleanText = String(text || "").trim();
+
+    if (!cleanText) {
+        setOrbState("idle");
+        return;
+    }
+
+    stopSpeech();
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+
+    utterance.lang = "en-US";
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    currentUtterance = utterance;
+
+    utterance.onstart = () => {
+
+        if (currentUtterance === utterance) {
+            setOrbState("speaking");
+        }
+
+    };
+
+    utterance.onend = () => {
+
+        if (currentUtterance === utterance) {
+            currentUtterance = null;
+            setOrbState("idle");
+        }
+
+    };
+
+    utterance.onerror = (event) => {
+
+        console.warn("Speech output:", event.error);
+
+        if (currentUtterance === utterance) {
+            currentUtterance = null;
+            setOrbState("idle");
+        }
+
+    };
+
+    window.speechSynthesis.speak(utterance);
+
+}
+
+
+// ==================================================
+// VOICE RESPONSE TOGGLE
+// ==================================================
+
+function updateSpeakerButton() {
+
+    speakerLabel.textContent = voiceResponsesEnabled
+        ? "VOICE ON"
+        : "VOICE OFF";
+
+    speakerToggle.setAttribute(
+        "aria-pressed",
+        String(voiceResponsesEnabled)
+    );
+
+    speakerToggle.title = voiceResponsesEnabled
+        ? "Turn voice responses off"
+        : "Turn voice responses on";
+
+    speakerToggle.classList.toggle(
+        "voice-disabled",
+        !voiceResponsesEnabled
+    );
+
+}
+
+speakerToggle.addEventListener("click", () => {
+
+    voiceResponsesEnabled = !voiceResponsesEnabled;
+
+    updateSpeakerButton();
+
+    if (!voiceResponsesEnabled) {
+        stopSpeech();
+        setOrbState("idle");
+    }
+
+});
+
+
+// ==================================================
+// SCREEN MANAGEMENT
+// ==================================================
+
+function showChat() {
+
+    welcomeScreen.hidden = true;
+    chatScreen.hidden = false;
+
+}
+
+function showWelcome() {
+
+    chatScreen.hidden = true;
+    welcomeScreen.hidden = false;
+
+}
+
+
+// ==================================================
+// SCROLL MANAGEMENT
+// ==================================================
+
+function scrollToLatest() {
+
+    requestAnimationFrame(() => {
+
+        messages.scrollTo({
+            top: messages.scrollHeight,
+            behavior: "smooth"
+        });
+
+    });
+
+}
+
+
+// ==================================================
+// MESSAGE CREATION
+// ==================================================
+
+function addMessage(role, content) {
+
+    const message = document.createElement("div");
+    message.className = "message " + role;
+
+    const label = document.createElement("div");
+    label.className = "message-label";
+    label.textContent = role === "user" ? "YOU" : "AEGIS";
+
+    const body = document.createElement("div");
+    body.className = "message-content";
+    body.textContent = content || "";
+
+    message.appendChild(label);
+    message.appendChild(body);
+
+    messages.appendChild(message);
+
+    scrollToLatest();
+
+    return message;
+
+}
+
+
+// ==================================================
+// THINKING INDICATOR
+// ==================================================
+
+function addThinkingIndicator() {
+
+    const message = document.createElement("div");
+    message.className = "message assistant thinking-message";
+
+    const label = document.createElement("div");
+    label.className = "message-label";
+    label.textContent = "AEGIS";
+
+    const indicator = document.createElement("div");
+    indicator.className = "typing-indicator";
+
+    for (let i = 0; i < 3; i++) {
+
+        const dot = document.createElement("span");
+        indicator.appendChild(dot);
+
+    }
+
+    message.appendChild(label);
+    message.appendChild(indicator);
+
+    messages.appendChild(message);
+
+    scrollToLatest();
+
+    return message;
+
+}
+
+
+// ==================================================
+// DECISION EVIDENCE
+// ==================================================
+
+function addEvidence(parent, decision) {
+
+    if (
+        decision === null ||
+        decision === undefined
+    ) {
+        return;
+    }
+
+    const evidence = document.createElement("details");
+    evidence.className = "evidence-panel";
+
+    const summary = document.createElement("summary");
+    summary.textContent = "View decision details and evidence";
+
+    const content = document.createElement("pre");
+    content.textContent = JSON.stringify(decision, null, 2);
+
+    evidence.appendChild(summary);
+    evidence.appendChild(content);
+
+    parent.appendChild(evidence);
+
+    scrollToLatest();
+
+}
+
+
+// ==================================================
+// SIDEBAR / FOCUS MODE
+// ==================================================
+
+sidebarToggle.addEventListener("click", () => {
+
+    const focused = app.classList.toggle("focus-mode");
+
+    sidebarToggle.setAttribute(
+        "aria-label",
+        focused ? "Show sidebar" : "Hide sidebar"
+    );
+
+    sidebarToggle.title = focused
+        ? "Show sidebar"
+        : "Hide sidebar";
+
+});
+
+
+document.addEventListener("keydown", event => {
+
+    if (
+        event.key === "Escape" &&
+        app.classList.contains("focus-mode")
+    ) {
+
+        app.classList.remove("focus-mode");
+
+        sidebarToggle.setAttribute("aria-label", "Hide sidebar");
+        sidebarToggle.title = "Hide sidebar";
+
+    }
+
+});
+
+
+// ==================================================
+// BACKEND CONNECTION
+// ==================================================
+
+async function checkConnection() {
+
+    try {
+
+        const response = await fetch("/stats");
+
+        if (!response.ok) {
+            throw new Error("Backend unavailable");
+        }
+
+        connectionStatus.textContent = "Backend connected";
+
+        connectionDot.classList.remove("disconnected");
+        connectionDot.classList.add("connected");
+
+    } catch (error) {
+
+        connectionStatus.textContent = "Backend unavailable";
+
+        connectionDot.classList.remove("connected");
+        connectionDot.classList.add("disconnected");
+
+    }
+
+}
+
+
+function getChatSessionId() {
+
+    let sessionId = sessionStorage.getItem("aegis_chat_session");
+
+    if (!sessionId) {
+
+        sessionId = (
+            window.crypto && crypto.randomUUID
+                ? crypto.randomUUID()
+                : "aegis-" + Date.now() + "-" + Math.random().toString(16).slice(2)
+        );
+
+        sessionStorage.setItem("aegis_chat_session", sessionId);
+    }
+
+    return sessionId;
+}
+
+// ==================================================
+// SEND MESSAGE
+// ==================================================
+
+async function sendMessage(message) {
+
+    const cleanMessage = String(message || "").trim();
+
+    if (!cleanMessage || isSending) return;
+
+    stopSpeech();
+
+    showChat();
+
+    addMessage("user", cleanMessage);
+
+    messageInput.value = "";
+
+    isSending = true;
+    sendButton.disabled = true;
+
+    setOrbState("processing");
+
+    const thinkingMessage = addThinkingIndicator();
+
+    try {
+
+        const response = await fetch("/chat", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+    message: cleanMessage,
+    agent: "chat",
+    session_id: getChatSessionId()
+})
+
+        });
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Backend returned HTTP " + response.status
+            );
+
+        }
+
+        const data = await response.json();
+
+        const reply =
+            data.reply || "The backend returned no response.";
+
+        // Remove the thinking animation.
+        thinkingMessage.remove();
+
+        // Display the actual backend response.
+        const responseMessage = addMessage(
+            "assistant",
+            reply
+        );
+
+        // Attach decision evidence if supplied.
+        addEvidence(responseMessage, data.decision);
+
+        // Speak the response if voice is enabled.
+        speakResponse(reply);
+
+    } catch (error) {
+
+        thinkingMessage.remove();
+
+        const errorMessage = addMessage(
+            "assistant",
+            "I could not complete this request. Please check the AEGIS backend connection and try again."
+        );
+
+        console.error("AEGIS request error:", error);
+
+        setOrbState("idle");
+
+    } finally {
+
+        isSending = false;
+        sendButton.disabled = false;
+
+        messageInput.focus();
+
+        scrollToLatest();
+
+    }
+
+}
+
+
+// ==================================================
+// CHAT FORM
+// ==================================================
+
+chatForm.addEventListener("submit", event => {
+
+    event.preventDefault();
+
+    sendMessage(messageInput.value);
+
+});
+
+
+// ==================================================
+// SUGGESTED PROMPTS
+// ==================================================
+
+document.querySelectorAll(".suggestion").forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        sendMessage(button.dataset.prompt);
+
+    });
+
+});
+
+
+// ==================================================
+// VOICE INPUT
+// ==================================================
+
+const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+if (SpeechRecognition) {
+
+    recognition = new SpeechRecognition();
+
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = true;
+
+    recognition.onstart = () => {
+
+        isListening = true;
+
+        voiceFinalTranscript = "";
+        discardVoiceResult = false;
+
+        stopSpeech();
+
+        updateMicButtons(true);
+        setOrbState("listening");
+
+    };
+
+
+    recognition.onresult = event => {
+
+        let interimTranscript = "";
+
+        for (
+            let i = event.resultIndex;
+            i < event.results.length;
+            i++
+        ) {
+
+            const result = event.results[i];
+
+            if (result.isFinal) {
+
+                voiceFinalTranscript +=
+                    result[0].transcript + " ";
+
+            } else {
+
+                interimTranscript += result[0].transcript;
+
+            }
+
+        }
+
+        messageInput.value = (
+            voiceFinalTranscript + interimTranscript
+        ).trim();
+
+    };
+
+
+    recognition.onerror = event => {
+
+        console.warn("Voice recognition:", event.error);
+
+        if (
+            event.error === "not-allowed" ||
+            event.error === "service-not-allowed"
+        ) {
+
+            alert(
+                "Microphone permission denied. Allow microphone access in Chrome."
+            );
+
+        }
+
+        if (
+            event.error === "no-speech" ||
+            event.error === "aborted"
+        ) {
+            discardVoiceResult = true;
+        }
+
+    };
+
+
+    recognition.onend = () => {
+
+        isListening = false;
+
+        updateMicButtons(false);
+
+        const transcript = voiceFinalTranscript.trim();
+
+        if (!discardVoiceResult && transcript) {
+
+            messageInput.value = transcript;
+
+            sendMessage(transcript);
+
+        } else {
+
+            messageInput.value = "";
+
+            if (!isSending) {
+                setOrbState("idle");
+            }
+
+        }
+
+        voiceFinalTranscript = "";
+        discardVoiceResult = false;
+
+    };
+
+}
+
+
+// ==================================================
+// MICROPHONE CONTROLS
+// ==================================================
+
+function updateMicButtons(listening) {
+
+    [micButton, focusMicButton].forEach(button => {
+
+        if (!button) return;
+
+        button.classList.toggle("listening", listening);
+
+        button.title = listening
+            ? "Stop voice input"
+            : "Start voice input";
+
+        button.setAttribute(
+            "aria-label",
+            listening
+                ? "Stop voice input"
+                : "Start voice input"
+        );
+
+    });
+
+}
+
+
+function toggleVoiceInput() {
+
+    if (!recognition) {
+
+        alert(
+            "Voice recognition is not supported. Please use Google Chrome."
+        );
+
+        return;
+
+    }
+
+    if (isSending) return;
+
+    if (isListening) {
+
+        recognition.stop();
+
+        return;
+
+    }
+
+    try {
+
+        messageInput.value = "";
+
+        voiceFinalTranscript = "";
+        discardVoiceResult = false;
+
+        recognition.start();
+
+    } catch (error) {
+
+        console.error("Microphone could not start:", error);
+
+    }
+
+}
+
+
+micButton.addEventListener("click", toggleVoiceInput);
+
+focusMicButton.addEventListener("click", toggleVoiceInput);
+
+
+// ==================================================
+// NEW SESSION
+// ==================================================
+
+document.getElementById("newSession").addEventListener(
+    "click",
+    () => {
+
+        if (isListening && recognition) {
+
+            discardVoiceResult = true;
+            recognition.abort();
+
+        }
+
+        stopSpeech();
+
+        messages.innerHTML = "";
+
+        messageInput.value = "";
+
+        showWelcome();
+
+        setOrbState("idle");
+
+    }
+);
+
+
+// ==================================================
+// OPERATIONS DASHBOARD
+// ==================================================
+
+document.getElementById("operationsLink").addEventListener(
+    "click",
+    () => {
+
+        stopSpeech();
+
+        window.location.href = "/dashboard/operations.html";
+
+    }
+);
+
+
+// ==================================================
+// INITIALIZE
+// ==================================================
+
+updateSpeakerButton();
+
+checkConnection();
+
+setInterval(checkConnection, 10000);
+
+setOrbState("idle");
+
 </script>
+
 </body>
 </html>

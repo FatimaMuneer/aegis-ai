@@ -13,3 +13,5 @@ matplotlib>=3.8
 # optional
 # anthropic     (AI second opinion in aegis/risk.py)
 # langgraph     (scripts/langgraph_agent.py)
+groq>=1.0
+python-dotenv>=1.0

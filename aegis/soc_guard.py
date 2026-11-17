@@ -50,6 +50,21 @@ def check_soc(action, policy: dict, _recheck: bool = False) -> Decision:
     if policy.get("require_alert_id", True) and not a.get("alert_id"):
         return _d(Verdict.BLOCK, "SOC-01", "No alert ID. No evidence, no action.", original, risk="HIGH")
 
+    # SOC-10: response actions require a non-empty string target
+    # or a non-empty list containing only non-empty strings.
+    if (
+        not isinstance(t, (str, list))
+        or (isinstance(t, str) and not t.strip())
+        or (isinstance(t, list) and (
+            not t or any(not isinstance(item, str) or not item.strip() for item in t)
+        ))
+    ):
+        return _d(
+            Verdict.REVIEW, "SOC-10",
+            "Response action has a missing or invalid target. Human review required.",
+            original, risk="MEDIUM"
+        )
+
     # SOC-06: protected accounts
     if name in ("disable_account", "reset_password"):
         protected = {p.lower() for p in policy.get("protected_accounts", [])}

@@ -36,6 +36,17 @@ read_commands:            # ALLOW: harmless commands (matched by their start)
   - git log
   - git diff
   - git branch
+  - git show
+  - git remote -v
+  - git rev-parse
+  - git ls-files
+  - python --version
+  - python -m pip --version
+  - python -m pip show
+  - python -m pip list
+  - pip --version
+  - pip show
+  - pip list
   - kubectl get
   - kubectl describe
   - kubectl logs
