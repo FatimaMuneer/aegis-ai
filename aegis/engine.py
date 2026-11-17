@@ -60,6 +60,7 @@ GUARD_FUNCTIONS = {
     "ops": ("ops_guard", "check_command", "devops"),
     "devops": ("ops_guard", "check_command", "devops"),
     "soc": ("soc_guard", "check_soc", "soc"),
+    "sandbox": ("sandbox_guard", "check_sandbox", "general"),
 }
 
 
@@ -171,6 +172,7 @@ class Engine:
             # Never override a BLOCK or an unsupported action.
             if (
                 kind in GUARD_FUNCTIONS
+                and kind != "sandbox"
                 and verdict_name(decision) in APPROVAL_NAMES
             ):
                 rule = learn.matches(self.learned, action)

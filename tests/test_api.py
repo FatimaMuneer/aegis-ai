@@ -57,9 +57,55 @@ def test_verify_endpoint(client):
 
 def test_pending_and_approve(client):
     client.post("/evaluate", json={"action": "git push origin main", "kind": "shell"})
-    assert client.get("/pending").json()["count"] == 1
-    client.post("/approve", json={"action": "git push origin main", "kind": "shell"})
+    pending = client.get("/pending").json()
+    assert pending["count"] == 1
+
+    review_seq = pending["entries"][0]["seq"]
+    response = client.post("/approve", json={"review_seq": review_seq})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "APPROVED"
+    assert body["executed"] is False
+    assert body["approval_id"]
+
     assert client.get("/pending").json()["count"] == 0
+
+    entries = api.engine.audit.read_all()
+    assert entries[-1]["verdict"] == "APPROVAL_GRANTED"
+    assert not any(e["verdict"] == "HUMAN_APPROVED" for e in entries)
+    assert client.get("/learn/suggestions").json()["suggestions"] == []
+
+
+def test_approval_requires_a_real_review_event(client):
+    response = client.post("/approve", json={"review_seq": 999})
+    assert response.status_code == 404
+
+
+def test_review_cannot_be_approved_twice(client):
+    client.post("/evaluate", json={"action": "git push origin main", "kind": "shell"})
+    review_seq = client.get("/pending").json()["entries"][0]["seq"]
+
+    first = client.post("/approve", json={"review_seq": review_seq})
+    second = client.post("/approve", json={"review_seq": review_seq})
+
+    assert first.status_code == 200
+    assert second.status_code == 409
+
+
+def test_rejection_resolves_review_without_grant(client):
+    client.post("/evaluate", json={"action": "git push origin main", "kind": "shell"})
+    review_seq = client.get("/pending").json()["entries"][0]["seq"]
+
+    response = client.post("/reject", json={"review_seq": review_seq})
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "REJECTED"
+    assert response.json()["executed"] is False
+    assert client.get("/pending").json()["count"] == 0
+
+    entries = api.engine.audit.read_all()
+    assert entries[-1]["verdict"] == "APPROVAL_REJECTED"
 
 
 def test_chat_endpoint(client):
