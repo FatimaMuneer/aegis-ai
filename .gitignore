@@ -34,3 +34,6 @@ aegis_audit.jsonl
 results/engine_audit_*.jsonl
 data/demo.db
 results/charts/
+
+# AEGIS local sandbox workspace
+.aegis_sandbox/
