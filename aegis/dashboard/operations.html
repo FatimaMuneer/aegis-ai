@@ -1,134 +1,484 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AEGIS Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEGIS — AI Accountability Operations</title>
 <style>
-  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --line:#334155;
-          --allow:#22c55e; --correct:#3b82f6; --review:#f59e0b; --block:#ef4444; }
-  * { box-sizing: border-box; }
-  body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); }
-  header { padding:16px 24px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
-  h1 { margin:0; font-size:20px; } h2 { margin:0 0 12px; font-size:15px; color:var(--muted); font-weight:600; }
-  main { padding:24px; display:grid; gap:20px; max-width:1200px; margin:auto; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
-  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; }
-  .stat b { display:block; font-size:28px; } .stat span { color:var(--muted); font-size:13px; }
-  .ALLOW{color:var(--allow)} .CORRECT{color:var(--correct)} .REVIEW{color:var(--review)} .BLOCK{color:var(--block)}
-  table { width:100%; border-collapse:collapse; font-size:13px; }
-  th,td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
-  td.action { font-family:ui-monospace,monospace; word-break:break-all; max-width:380px; }
-  .scroll { overflow-x:auto; }
-  select,input,textarea,button { background:#0b1220; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:8px; font:inherit; }
-  textarea { width:100%; min-height:70px; font-family:ui-monospace,monospace; }
-  button { cursor:pointer; background:#2563eb; border-color:#2563eb; } button.small { padding:3px 8px; font-size:12px; }
-  .row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
-  .pill { padding:3px 10px; border-radius:999px; font-size:12px; border:1px solid currentColor; }
-  pre { white-space:pre-wrap; margin:8px 0 0; font-size:13px; }
-  .muted { color:var(--muted); }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg:#020b10; --panel:rgba(4,23,31,.88); --panel2:rgba(5,30,39,.76);
+  --line:rgba(0,218,239,.34); --cyan:#00e5f5; --cyan2:#00aebf;
+  --text:#eefbff; --muted:#91aab4; --green:#00e6ad;
+  --red:#ff5476; --amber:#ffbd55;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:
+  radial-gradient(ellipse at 49% 43%,rgba(0,139,167,.17),transparent 34%),
+  radial-gradient(ellipse at 0% 30%,rgba(0,195,218,.11),transparent 28%),
+  radial-gradient(ellipse at 100% 8%,rgba(0,180,205,.12),transparent 26%),
+  #02090e;color:var(--text);font-family:Inter,Arial,sans-serif;min-height:100vh;
+  overflow-x:hidden;
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.23;
+  background-image:radial-gradient(rgba(0,220,240,.65) .7px,transparent .7px);
+  background-size:17px 17px;mask-image:linear-gradient(90deg,#000,transparent 24%,transparent 76%,#000);
+}
+button,a{font:inherit}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer}
+.shell{max-width:1600px;margin:auto;padding:18px 3.4% 0}
+.topbar{height:70px;display:flex;align-items:center;justify-content:space-between;gap:22px}
+.brand{display:flex;align-items:center;gap:13px;min-width:245px}
+.brand-mark{width:43px;height:48px;filter:drop-shadow(0 0 10px #00ddeb)}
+.brand-name{font-size:23px;font-weight:700;letter-spacing:1.5px}
+.brand-sub{font-size:11px;color:#b2c8d0;margin-top:3px}
+.nav{display:flex;align-items:center;gap:5px;padding:7px;border:1px solid rgba(0,205,226,.18);border-radius:15px;background:rgba(4,28,37,.76)}
+.nav a{font-size:12px;color:#b8cbd1;padding:11px 17px;border-radius:9px}
+.nav a.active,.nav a:hover{background:rgba(0,219,237,.15);color:var(--cyan)}
+.top-right{display:flex;gap:10px}
+.thumb{width:68px;height:56px;border:1px solid rgba(0,218,239,.24);border-radius:12px;background:linear-gradient(145deg,#07313b,#03131b);display:grid;place-items:center;color:var(--cyan);font-size:21px}
+.hero{display:grid;grid-template-columns:1.8fr 1fr;gap:28px;align-items:center;padding:28px 0 22px}
+.hero-main{text-align:center;padding:0 3%}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:rgba(0,190,215,.09);border-radius:30px;padding:9px 15px;color:var(--cyan);font-size:11px;font-weight:600}
+.hero h1{font-size:clamp(31px,4vw,48px);line-height:1.08;letter-spacing:-1.8px;margin:15px 0 10px;font-weight:600}
+.hero p{font-size:13px;line-height:1.7;color:#b3c8d0;max-width:590px;margin:0 auto}
+.actions{display:flex;justify-content:center;gap:12px;margin-top:17px}
+.btn{border:1px solid var(--line);border-radius:11px;padding:11px 17px;background:rgba(0,211,231,.1);color:#dffcff;font-size:12px;font-weight:600;display:inline-flex;gap:9px;align-items:center}
+.btn.primary{background:linear-gradient(110deg,#6af8ff,#00cddd);color:#00232a;border:0;box-shadow:0 0 22px rgba(0,220,239,.24)}
+.btn:hover{filter:brightness(1.16);transform:translateY(-1px)}
+.hero-side{text-align:center;padding:10px}
+.hero-side h2{font-size:19px;font-weight:600;margin:12px 0 7px}
+.hero-side p{font-size:11px;color:var(--muted);line-height:1.6}
+.section-label{font-size:10px;color:var(--cyan);letter-spacing:1.3px;text-transform:uppercase}
+.main-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px;align-items:stretch}
+.console{
+  border:1px solid rgba(0,222,241,.65);border-radius:19px;overflow:hidden;
+  background:linear-gradient(145deg,rgba(5,31,41,.94),rgba(1,12,19,.96));
+  box-shadow:0 0 35px rgba(0,204,228,.12),inset 0 0 28px rgba(0,204,228,.035);
+  min-height:425px;position:relative;
+}
+.console:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 35%,rgba(0,222,240,.045),transparent 65%)}
+.console-toolbar{height:53px;display:flex;align-items:center;gap:8px;padding:0 15px;border-bottom:1px solid rgba(0,207,226,.18);background:rgba(0,8,13,.4);position:relative;z-index:2}
+.rail{width:40px;display:flex;gap:10px;flex-direction:column;align-items:center;border-right:1px solid rgba(0,205,226,.17);padding:15px 0}
+.rail span{width:29px;height:29px;border:1px solid rgba(0,212,232,.22);border-radius:8px;display:grid;place-items:center;color:#80cbd4;font-size:13px}
+.rail span.selected{color:var(--cyan);background:rgba(0,222,239,.13);box-shadow:0 0 12px rgba(0,222,239,.15)}
+.toolbar-chip{font-size:10px;color:#c1d7dd;border:1px solid rgba(0,204,224,.17);border-radius:8px;padding:8px 10px;background:rgba(0,16,23,.6)}
+.toolbar-spacer{flex:1}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green);display:inline-block;margin-right:5px}
+.console-content{display:grid;grid-template-columns:40px 1fr;min-height:370px;position:relative}
+.console-work{padding:15px 13px 14px;min-width:0}
+.console-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.console-heading h2{font-size:18px;margin:0 0 5px;font-weight:600}
+.console-heading p{font-size:10px;color:var(--muted);margin:0}
+.console-heading .tag{font-size:9px;color:var(--green);border:1px solid rgba(0,230,173,.25);padding:6px 8px;border-radius:7px}
+.world-layout{display:grid;grid-template-columns:1fr 1.45fr 1fr;gap:10px;align-items:center;min-height:285px;margin-top:4px}
+.mini-stack{display:flex;flex-direction:column;gap:10px;z-index:2}
+.mini-card{border:1px solid rgba(0,205,228,.28);background:rgba(0,17,24,.83);border-radius:12px;padding:11px;min-width:0;box-shadow:inset 0 0 18px rgba(0,196,220,.035)}
+.mini-card h3{font-size:10px;font-weight:600;margin:0 0 9px}
+.mini-card .big{font-size:24px;letter-spacing:-1px}
+.mini-card small{font-size:9px;color:var(--muted)}
+.chart{height:58px;width:100%;display:block;margin-top:7px}
+.spark{height:37px;width:100%;display:block;margin-top:8px}
+.globe-wrap{height:260px;display:grid;place-items:center;position:relative;min-width:0}
+.globe-wrap:before,.globe-wrap:after{content:"";position:absolute;border:1px solid rgba(0,216,240,.38);border-radius:50%;width:90%;height:27%;bottom:5px;box-shadow:0 0 17px rgba(0,216,240,.18)}
+.globe-wrap:after{width:72%;height:18%;bottom:17px;opacity:.7}
+.globe{width:100%;max-width:320px;filter:drop-shadow(0 0 18px rgba(0,207,242,.4));animation:float 5s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-7px)}}
+.globe-grid{fill:none;stroke:#00dff5;stroke-width:.8;opacity:.42}
+.globe-land{fill:#00c8d9;opacity:.19;stroke:#00dff5;stroke-width:1}
+.orbit{fill:none;stroke:#00dff5;stroke-width:1;opacity:.7}
+.node{fill:#a8fbff;filter:drop-shadow(0 0 4px #00dff5)}
+.side-column{display:grid;grid-template-rows:auto 1fr 1fr;gap:12px}
+.side-intro{text-align:center;padding:7px 3px 5px}
+.side-intro h2{font-size:18px;margin:8px 0}
+.side-intro p{font-size:10px;color:var(--muted);margin:0}
+.analytics-card{border:1px solid rgba(0,210,230,.4);border-radius:14px;padding:15px;background:linear-gradient(145deg,rgba(5,34,43,.91),rgba(1,14,21,.95));box-shadow:inset 0 0 20px rgba(0,207,226,.035)}
+.analytics-card h3{font-size:12px;margin:0 0 7px}
+.analytics-card p{font-size:10px;color:var(--muted);line-height:1.6;margin:0}
+.analytics-card .statline{display:flex;justify-content:space-between;align-items:end;margin-top:16px}
+.analytics-card .statline strong{font-size:27px;font-weight:600}
+.analytics-card .statline span{font-size:10px;color:var(--green)}
+.ring{width:112px;height:70px;margin:14px auto 0;border:7px solid rgba(0,213,232,.12);border-bottom:0;border-radius:100px 100px 0 0;position:relative;overflow:hidden}
+.ring:after{content:"";position:absolute;inset:0;border:7px solid transparent;border-top-color:var(--cyan);border-left-color:#00b7c8;border-radius:100px 100px 0 0;transform:rotate(-12deg)}
+.two-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bottom-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.stat-card{border:1px solid rgba(0,204,226,.32);border-radius:14px;padding:16px;background:linear-gradient(145deg,rgba(5,31,40,.9),rgba(1,13,19,.92));min-height:100px;position:relative;overflow:hidden}
+.stat-card:after{content:"";position:absolute;width:100px;height:100px;border-radius:50%;right:-45px;bottom:-65px;background:rgba(0,212,235,.1);filter:blur(10px)}
+.stat-card .label{font-size:11px;color:#c3d5db}
+.stat-card .value{font-size:27px;margin-top:11px;letter-spacing:-1px}
+.stat-card .hint{font-size:9px;color:var(--muted);margin-top:5px}
+.lower-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:12px;margin-top:13px}
+.lower-card{border:1px solid rgba(0,205,226,.3);border-radius:14px;background:rgba(3,20,28,.85);padding:15px;min-height:120px}
+.lower-card h3{font-size:12px;margin:0 0 11px}
+.agent-list{display:flex;flex-wrap:wrap;gap:7px}
+.agent-pill{font-size:10px;padding:7px 10px;border:1px solid rgba(0,205,226,.25);border-radius:8px;color:#b9e9ed;background:rgba(0,185,205,.06)}
+.activity-list{display:flex;flex-direction:column;gap:8px;max-height:180px;overflow:auto}
+.activity{display:grid;grid-template-columns:7px 1fr auto;gap:9px;align-items:center;font-size:10px;color:#d3e5e9;padding-bottom:7px;border-bottom:1px solid rgba(0,200,220,.1)}
+.activity .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan)}
+.activity .meta{color:var(--muted);font-size:9px}
+.review-row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid rgba(0,200,220,.12);font-size:10px}
+.review-row:last-child{border:0}
+.review-row button{background:rgba(0,210,230,.1);border:1px solid var(--line);color:var(--cyan);border-radius:7px;padding:6px 9px;font-size:9px}
+.statusbar{margin-top:24px;border-top:1px solid rgba(0,210,230,.24);padding:18px 0 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;color:#9bb3bc;font-size:10px}
+.status-left,.status-right{display:flex;align-items:center;gap:17px;flex-wrap:wrap}
+.status-right{margin-left:auto}
+.status-online{color:var(--green)}
+.toast{position:fixed;right:20px;bottom:20px;background:#08232c;border:1px solid var(--line);padding:12px 16px;border-radius:10px;font-size:12px;display:none;z-index:20}
+.empty{font-size:10px;color:var(--muted);padding:10px 0}
+@media(max-width:1050px){
+ .hero,.main-grid{grid-template-columns:1fr}
+ .hero-side{display:none}.side-column{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
+ .side-intro{grid-column:1/-1}.console{min-height:0}
+}
+@media(max-width:700px){
+ .shell{padding:12px 12px 0}.topbar{height:auto;flex-wrap:wrap}.brand{min-width:0}.nav{order:3;width:100%;overflow:auto}.nav a{padding:9px 12px;white-space:nowrap}.top-right{display:none}
+ .hero{padding:28px 0 18px}.hero h1{font-size:34px}.world-layout{grid-template-columns:1fr 1fr}.globe-wrap{grid-column:1/-1;grid-row:1;height:210px}.mini-stack{grid-row:2}.side-column{grid-template-columns:1fr}.bottom-stats{grid-template-columns:1fr 1fr}.lower-grid{grid-template-columns:1fr}.toolbar-chip:nth-of-type(n+3){display:none}.statusbar{align-items:flex-start;flex-direction:column}.status-right{margin-left:0}
+}
 </style>
 </head>
 <body>
-<header>
-  <h1>AEGIS <span class="muted" style="font-weight:400">accountability layer for AI agents</span></h1>
-  <div><span id="integrity" class="pill muted">checking log...</span>
-       <button class="small" onclick="verifyLog()">Verify log</button></div>
-</header>
-<main>
-  <section class="card"><h2>Overview</h2><div class="stats" id="stats"></div></section>
+<div class="shell">
+  <header class="topbar">
+    <a class="brand" href="/">
+      <svg class="brand-mark" viewBox="0 0 48 54" fill="none" aria-hidden="true">
+        <path d="M24 3 43 10v14c0 12-8 21-19 27C13 45 5 36 5 24V10L24 3Z" stroke="#00e5f5" stroke-width="3"/>
+        <path d="M24 10 36 14v10c0 8-5 14-12 19-7-5-12-11-12-19V14l12-4Z" stroke="#00aebe" stroke-width="1.5"/>
+        <path d="M24 15v23M14 26h20M18 19l6 4 6-4M18 33l6-4 6 4" stroke="#00e5f5" stroke-width="1.8"/>
+      </svg>
+      <div><div class="brand-name">AEGIS</div><div class="brand-sub">AI Accountability Layer</div></div>
+    </a>
+    <nav class="nav">
+      <a class="active" href="#home">Home</a><a href="#operations">Operations</a>
+      <a href="#agents">Agents</a><a href="#intelligence">Intelligence</a>
+      <a href="#policies">Policies</a><a href="/dashboard/index.html">Assistant</a>
+    </nav>
+    <div class="top-right"><div class="thumb">◉</div><div class="thumb">⌘</div><div class="thumb">⬡</div></div>
+  </header>
 
-  <section class="card">
-    <h2>Try an action</h2>
-    <div class="row">
-      <select id="kind"><option>sql</option><option>shell</option><option>soc</option></select>
-      <input id="agent" value="dashboard" placeholder="agent name">
-      <button onclick="send()">Check it</button>
+  <section class="hero" id="home">
+    <div class="hero-main">
+      <div class="eyebrow">⬡ &nbsp; REAL-TIME AI ACCOUNTABILITY PLATFORM</div>
+      <h1>Detect, Monitor and<br>Govern AI Agent Actions</h1>
+      <p>One accountability layer between autonomous agents and the tools they use. Evaluate actions, enforce safeguards, require human review and preserve an auditable record.</p>
+      <div class="actions">
+        <a class="btn primary" href="#operations">View Operations <span>→</span></a>
+        <a class="btn" href="/dashboard/index.html">◯ &nbsp; Chat with AEGIS</a>
+      </div>
     </div>
-    <textarea id="action" placeholder="SELECT * FROM orders"></textarea>
-    <pre id="result" class="muted">The decision will appear here.</pre>
+    <div class="hero-side">
+      <div class="eyebrow">⌁ &nbsp; LIVE OVERSIGHT</div>
+      <h2>Everything Your AI Safety Team Needs</h2>
+      <p>Inspect decisions, investigate actions and review exceptions with evidence from the AEGIS engine.</p>
+    </div>
   </section>
 
-  <section class="card"><h2>Waiting for a human</h2>
-    <div class="scroll"><table><thead><tr><th>#</th><th>Kind</th><th>Rule</th><th>Action</th><th>Why</th><th></th></tr></thead>
-    <tbody id="pending"></tbody></table></div>
+  <main class="main-grid" id="operations">
+    <section>
+      <div class="console">
+        <div class="console-toolbar">
+          <span class="toolbar-chip">AEGIS / CONTROL</span>
+          <span class="toolbar-chip">Scope: Audit Records</span>
+          <span class="toolbar-chip">Policy: Active</span>
+          <span class="toolbar-spacer"></span>
+          <span class="toolbar-chip"><i class="live-dot"></i><span id="connection">Connecting</span></span>
+          <span class="toolbar-chip" id="clock">--:--:--</span>
+        </div>
+        <div class="console-content">
+          <aside class="rail"><span class="selected">▦</span><span>⬡</span><span>⌘</span><span>◈</span><span>♧</span><span>⌕</span></aside>
+          <div class="console-work">
+            <div class="console-heading">
+              <div><h2>AEGIS Operations Center</h2><p>Action Governance · Agent Oversight · Audit Integrity</p></div>
+              <span class="tag">● ENGINE MONITORING</span>
+            </div>
+            <div class="world-layout">
+              <div class="mini-stack">
+                <div class="mini-card">
+                  <h3>Decision Distribution</h3>
+                  <div class="big" id="decision-total">—</div><small>Recorded evaluations</small>
+                  <svg class="chart" id="decision-chart" viewBox="0 0 180 58" preserveAspectRatio="none"></svg>
+                </div>
+                <div class="mini-card">
+                  <h3>Recent Audit Activity</h3>
+                  <div class="big" id="audit-count">—</div><small>Audit entries returned</small>
+                  <svg class="spark" id="activity-chart" viewBox="0 0 180 37" preserveAspectRatio="none"></svg>
+                </div>
+              </div>
+
+              <div class="globe-wrap">
+                <svg class="globe" viewBox="0 0 340 300" role="img" aria-label="Abstract visualization of AEGIS action governance">
+                  <defs>
+                    <radialGradient id="sphere"><stop stop-color="#087f96" stop-opacity=".36"/><stop offset=".72" stop-color="#003541" stop-opacity=".16"/><stop offset="1" stop-color="#00131c" stop-opacity=".05"/></radialGradient>
+                    <linearGradient id="edge"><stop stop-color="#00eaff" stop-opacity=".1"/><stop offset=".5" stop-color="#00eaff"/><stop offset="1" stop-color="#00eaff" stop-opacity=".1"/></linearGradient>
+                  </defs>
+                  <circle cx="170" cy="139" r="112" fill="url(#sphere)" stroke="#00dff5" stroke-opacity=".6"/>
+                  <ellipse cx="170" cy="139" rx="112" ry="43" class="globe-grid"/>
+                  <ellipse cx="170" cy="139" rx="112" ry="78" class="globe-grid"/>
+                  <ellipse cx="170" cy="139" rx="48" ry="112" class="globe-grid"/>
+                  <ellipse cx="170" cy="139" rx="83" ry="112" class="globe-grid"/>
+                  <path class="globe-land" d="M113 66 137 54 154 63 150 80 165 91 157 110 140 118 135 140 120 151 111 133 98 123 91 101 101 83Z"/>
+                  <path class="globe-land" d="m166 151 20 7 13 22-8 23-12 25-12-12-5-28-12-18Z"/>
+                  <path class="globe-land" d="m207 73 20-9 22 10 12 19-12 12-19-4-11 17-17-10-8-18Z"/>
+                  <path class="globe-land" d="m222 145 20-9 19 14-8 21-19 8-17-14Z"/>
+                  <g class="orbit">
+                    <path d="M35 151 88 94 137 118 170 139 222 87 293 119"/>
+                    <path d="M57 207 111 165 170 139 225 185 282 159"/>
+                    <path d="M88 94 111 165 137 118 225 185 222 87"/>
+                    <path d="M57 207 137 118 222 87 282 159"/>
+                    <path d="M35 151 111 165 225 185 293 119"/>
+                  </g>
+                  <g class="node">
+                    <circle cx="35" cy="151" r="3"/><circle cx="88" cy="94" r="3"/><circle cx="137" cy="118" r="4"/>
+                    <circle cx="170" cy="139" r="5"/><circle cx="222" cy="87" r="3"/><circle cx="293" cy="119" r="3"/>
+                    <circle cx="57" cy="207" r="3"/><circle cx="111" cy="165" r="3"/><circle cx="225" cy="185" r="4"/>
+                    <circle cx="282" cy="159" r="3"/>
+                  </g>
+                  <circle cx="170" cy="139" r="10" fill="#00e5f5" opacity=".2"/>
+                  <circle cx="170" cy="139" r="4" fill="#eaffff"/>
+                  <ellipse cx="170" cy="266" rx="130" ry="16" fill="none" stroke="url(#edge)" stroke-width="2"/>
+                  <ellipse cx="170" cy="266" rx="101" ry="9" fill="none" stroke="#00dff5" stroke-opacity=".5"/>
+                  <path d="M40 266 Q170 245 300 266" stroke="#00e5f5" fill="none" opacity=".5"/>
+                </svg>
+              </div>
+
+              <div class="mini-stack">
+                <div class="mini-card">
+                  <h3>Observed Agents</h3>
+                  <div class="big" id="agent-count">—</div><small>Distinct agents in audit history</small>
+                  <svg class="spark" id="agent-chart" viewBox="0 0 180 37" preserveAspectRatio="none"></svg>
+                </div>
+                <div class="mini-card">
+                  <h3>Human Review Queue</h3>
+                  <div class="big" id="pending-count">—</div><small>Actions awaiting a decision</small>
+                  <div style="margin-top:10px;color:var(--amber);font-size:10px" id="review-note">Checking pending approvals…</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-stats">
+        <div class="stat-card"><div class="label">Total Evaluations</div><div class="value" id="metric-total">—</div><div class="hint">Recorded by AEGIS</div></div>
+        <div class="stat-card"><div class="label">Blocked Actions</div><div class="value" id="metric-blocked">—</div><div class="hint">Denied by policy</div></div>
+        <div class="stat-card"><div class="label">Review Required</div><div class="value" id="metric-review">—</div><div class="hint">Human decision required</div></div>
+        <div class="stat-card"><div class="label">Audit Integrity</div><div class="value" id="metric-integrity">—</div><div class="hint" id="integrity-hint">Verifying audit chain</div></div>
+      </div>
+    </section>
+
+    <aside class="side-column" id="intelligence">
+      <div class="side-intro">
+        <div class="eyebrow">⌁ &nbsp; LIVE ANALYTICS</div>
+        <h2>Decision Intelligence</h2>
+        <p>Grounded in recorded AEGIS evaluations and audit evidence.</p>
+      </div>
+      <div class="two-cards">
+        <div class="analytics-card">
+          <h3>Blocked Actions</h3><p>Actions denied by the governance engine.</p>
+          <div class="ring"></div>
+          <div class="statline"><strong id="blocked-percent">—</strong><span id="blocked-total">— blocked</span></div>
+        </div>
+        <div class="analytics-card">
+          <h3>Decision Breakdown</h3><p>Distribution of recorded verdicts.</p>
+          <svg id="verdict-bars" viewBox="0 0 210 105" style="width:100%;height:105px;margin-top:12px"></svg>
+          <div class="statline"><strong id="verdict-kinds">—</strong><span>verdict types</span></div>
+        </div>
+        <div class="analytics-card">
+          <h3>Agent Visibility</h3><p>Agents identified from audit records.</p>
+          <div class="statline"><strong id="agents-side">—</strong><span>observed</span></div>
+          <div class="agent-list" id="agent-pills" style="margin-top:13px"></div>
+        </div>
+        <div class="analytics-card">
+          <h3>Risk Distribution</h3><p>Risk classifications in recorded actions.</p>
+          <div id="risk-bars" style="margin-top:15px"></div>
+        </div>
+      </div>
+      <div class="analytics-card aegis-assistant-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div>
+            <h3>AEGIS AI Accountability Analyst</h3>
+            <p>Ask about governance, policy decisions, audit records and pending reviews.</p>
+          </div>
+          <span style="font-size:10px;letter-spacing:1.2px;color:var(--green)">● ASSISTANT ONLINE</span>
+        </div>
+        <iframe
+          src="/dashboard/index.html?embed=assistant"
+          title="AEGIS AI Assistant"
+          loading="eager"
+          style="display:block;width:100%;height:460px;margin-top:14px;border:1px solid rgba(0,218,239,.25);border-radius:12px;background:#020b10"
+        ></iframe>
+      </div>
+    </aside>
+  </main>
+
+  <section class="lower-grid" id="agents">
+    <div class="lower-card">
+      <h3>Observed Agent Registry</h3>
+      <div class="agent-list" id="agent-list"><span class="empty">Loading agent names from audit history…</span></div>
+      <p style="font-size:9px;color:var(--muted);margin:12px 0 0">This list reflects agents present in AEGIS audit records; it does not imply live network connectivity.</p>
+    </div>
+    <div class="lower-card">
+      <h3>Recent Governance Activity</h3>
+      <div class="activity-list" id="activity-list"><div class="empty">Retrieving audit records…</div></div>
+    </div>
   </section>
 
-  <section class="card"><h2>Audit log (newest first)</h2>
-    <div class="row"><select id="filter" onchange="load()">
-      <option value="">all verdicts</option><option>ALLOW</option><option>CORRECT</option><option>REVIEW</option><option>BLOCK</option><option>HUMAN_APPROVED</option></select></div>
-    <div class="scroll"><table><thead><tr><th>#</th><th>Time</th><th>Agent</th><th>Verdict</th><th>Rule</th><th>Risk</th><th>Action</th></tr></thead>
-    <tbody id="log"></tbody></table></div>
+  <section class="lower-card" id="policies" style="margin-top:12px">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+      <h3 style="margin:0">Human Review Queue</h3>
+      <span class="section-label">PENDING APPROVALS</span>
+    </div>
+    <div id="review-list" style="margin-top:8px"><div class="empty">Loading pending approvals…</div></div>
+    <p style="font-size:9px;color:var(--muted);margin:10px 0 0">Review decisions are submitted to the AEGIS approval API. This dashboard does not execute approved actions.</p>
   </section>
 
-  <section class="card"><h2>Suggested rules (from repeated approvals)</h2>
-    <div id="suggestions" class="muted">Nothing yet.</div></section>
-</main>
+  <footer class="statusbar">
+    <div class="status-left"><span>AEGIS · AI Accountability Layer</span><span>Governance</span><span>Human Oversight</span><span>Audit Trail</span></div>
+    <div class="status-right"><span class="status-online"><i class="live-dot"></i><span id="footer-status">Connecting to engine</span></span><span id="last-updated">Last updated: —</span><span style="color:var(--cyan);font-size:19px">⌁</span></div>
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
 
 <script>
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const api = (path, opts) => fetch(path, opts).then(r => r.json());
-const post = (path, body) => api(path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+const $ = id => document.getElementById(id);
+const number = n => Number(n || 0).toLocaleString();
+const safe = v => String(v ?? "—").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const verdictColor = v => ({ALLOW:"#00e6ad",BLOCK:"#ff5476",REVIEW:"#ffbd55",CORRECT:"#36cfff"}[String(v||"").toUpperCase()] || "#00d9ed");
 
-async function load() {
-  const [stats, log, pend, sug] = await Promise.all([
-    api("/stats"), api("/audit?limit=100&verdict=" + encodeURIComponent(document.getElementById("filter").value)),
-    api("/pending"), api("/learn/suggestions")]);
-
-  const v = stats.verdicts || {};
-  document.getElementById("stats").innerHTML =
-    `<div class="stat"><b>${stats.total}</b><span>total decisions</span></div>` +
-    ["ALLOW","CORRECT","REVIEW","BLOCK"].map(k => `<div class="stat"><b class="${k}">${v[k] || 0}</b><span>${k}</span></div>`).join("");
-
-  const pill = document.getElementById("integrity");
-  pill.textContent = stats.log_intact ? "log intact" : "LOG TAMPERED";
-  pill.style.color = stats.log_intact ? "var(--allow)" : "var(--block)";
-
-  document.getElementById("log").innerHTML = log.entries.map(e =>
-    `<tr><td>${e.seq}</td><td>${esc((e.ts||"").replace("T"," ").slice(0,19))}</td><td>${esc(e.agent)}</td>
-     <td class="${esc(e.verdict)}">${esc(e.verdict)}</td><td>${esc(e.rule)}</td><td>${esc(e.risk)}</td>
-     <td class="action">${esc(e.original)}</td></tr>`).join("") || `<tr><td colspan="7" class="muted">No entries.</td></tr>`;
-
-  document.getElementById("pending").innerHTML = pend.entries.map(e =>
-    `<tr><td>${e.seq}</td><td>${esc(e.kind)}</td><td>${esc(e.rule)}</td><td class="action">${esc(e.original)}</td>
-     <td>${esc(e.reason)}</td>
-     <td>
-       <button class="small" data-a="${esc(e.original)}" data-k="${esc(e.kind)}" data-g="${esc(e.agent)}" onclick="approve(this)">Approve</button>
-       <button class="small" data-a="${esc(e.original)}" data-k="${esc(e.kind)}" data-g="${esc(e.agent)}" onclick="rejectReview(this)">Reject</button>
-     </td></tr>`
-  ).join("") || `<tr><td colspan="6" class="muted">Nothing is waiting.</td></tr>`;
-
-  document.getElementById("suggestions").innerHTML = sug.suggestions.length
-    ? sug.suggestions.map(s => `<div style="margin-bottom:8px">Approved ${s.approved_times}x: <code>${esc(s.example)}</code>
-        <button class="small" data-p="${esc(s.pattern)}" onclick="addRule(this)">Add rule</button></div>`).join("")
-    : "Nothing yet.";
+function toast(message){
+  const el=$("toast");el.textContent=message;el.style.display="block";
+  setTimeout(()=>el.style.display="none",3000);
 }
-
-async function send() {
-  const out = document.getElementById("result");
-  const d = await post("/evaluate", {action: document.getElementById("action").value,
-    kind: document.getElementById("kind").value, agent: document.getElementById("agent").value || "dashboard"});
-  out.className = "";
-  out.innerHTML = `<b class="${esc(d.verdict)}">${esc(d.verdict)}</b>  rule ${esc(d.rule)}  risk ${esc(d.risk)}\n${esc(d.reason)}` +
-                  (d.corrected ? `\nSafe version: ${esc(d.corrected)}` : "");
-  load();
+function setText(id,value){$(id).textContent=value;}
+function makeBars(svgId, values, color="#00dff5"){
+  const svg=$(svgId);if(!svg)return;
+  const max=Math.max(1,...values);
+  svg.innerHTML=values.map((v,i)=>{
+    const h=Math.max(2,(v/max)*48),x=4+i*7.1;
+    return `<rect x="${x}" y="${55-h}" width="4.5" height="${h}" rx="1" fill="${color}" opacity="${.45+(v/max)*.55}"/>`;
+  }).join("");
 }
-async function approve(btn) {
-  await post("/approve", {action: btn.dataset.a, kind: btn.dataset.k, agent: btn.dataset.g});
-  load();
+function makeSpark(svgId,values){
+  const svg=$(svgId);if(!svg)return;
+  const max=Math.max(1,...values),min=Math.min(0,...values);
+  const pts=values.map((v,i)=>`${i* (180/Math.max(1,values.length-1))},${32-(v-min)/(max-min||1)*27}`).join(" ");
+  svg.innerHTML=`<polyline points="${pts}" fill="none" stroke="#00e5f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
 }
-async function rejectReview(btn) {
-  if (!confirm("Reject this action? It will not be executed.")) return;
-  await post("/reject", {action: btn.dataset.a, kind: btn.dataset.k, agent: btn.dataset.g});
-  load();
+function renderVerdicts(verdicts){
+  const entries=Object.entries(verdicts||{});
+  const total=entries.reduce((s,[,v])=>s+Number(v||0),0);
+  $("verdict-bars").innerHTML=entries.length?entries.map(([k,v],i)=>{
+    const y=7+i*24,w=Number(v)/Math.max(1,total)*125;
+    return `<text x="0" y="${y+10}" fill="#a9c4cc" font-size="9">${safe(k)}</text><rect x="68" y="${y}" width="${Math.max(2,w)}" height="13" rx="3" fill="${verdictColor(k)}"/><text x="202" y="${y+10}" fill="#eafcff" text-anchor="end" font-size="9">${number(v)}</text>`;
+  }).join(""):`<text x="5" y="25" fill="#91aab4" font-size="10">No verdict data yet</text>`;
+  setText("verdict-kinds",entries.length);
 }
-async function addRule(btn) {
-  const reason = prompt("Why is this always okay?"); if (!reason) return;
-  await post("/learn/rules", {pattern: btn.dataset.p, reason}); load();
+function renderRisk(risks){
+  const entries=Object.entries(risks||{});
+  const colors=["#00dff5","#00e6ad","#ffbd55","#ff5476"];
+  $("risk-bars").innerHTML=entries.length?entries.map(([k,v],i)=>{
+    const pct=Number(v)/Math.max(1,entries.reduce((s,[,n])=>s+Number(n||0),0))*100;
+    return `<div style="margin:9px 0"><div style="display:flex;justify-content:space-between;font-size:9px;color:#b8d0d7;margin-bottom:5px"><span>${safe(k)}</span><span>${number(v)}</span></div><div style="height:5px;background:#102a33;border-radius:8px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${colors[i%colors.length]}"></div></div></div>`;
+  }).join(""):`<div class="empty">No risk data recorded</div>`;
 }
-async function verifyLog() { const r = await api("/audit/verify"); alert((r.intact ? "OK: " : "PROBLEM: ") + r.message); load(); }
-
-load(); setInterval(load, 5000);
+function renderAgents(agents){
+  const names=Array.isArray(agents)?agents:Object.keys(agents||{});
+  setText("agent-count",names.length);setText("agents-side",names.length);
+  const html=names.length?names.map(n=>`<span class="agent-pill">${safe(n)}</span>`).join(""):`<span class="empty">No agent names recorded yet</span>`;
+  $("agent-list").innerHTML=html;$("agent-pills").innerHTML=html;
+  makeSpark("agent-chart",names.map((_,i)=>i+1));
+}
+function renderActivity(entries){
+  const list=$("activity-list");
+  if(!Array.isArray(entries)||!entries.length){list.innerHTML='<div class="empty">No audit activity recorded yet.</div>';return;}
+  list.innerHTML=entries.slice(0,8).map(e=>{
+    const verdict=String(e.verdict||"UNKNOWN").toUpperCase();
+    const when=e.ts?new Date(e.ts).toLocaleTimeString():`#${e.seq??"—"}`;
+    return `<div class="activity"><span class="dot" style="background:${verdictColor(verdict)}"></span><span><strong>${safe(e.agent||"Unknown agent")}</strong> · ${safe(e.kind||"action")} <span class="meta">/ ${safe(e.rule||"engine")}</span></span><span style="color:${verdictColor(verdict)}">${safe(verdict)}</span></div>`;
+  }).join("");
+  setText("audit-count",number(entries.length));
+  makeSpark("activity-chart",entries.slice(0,20).reverse().map((_,i)=>i+1));
+}
+function renderReviews(items){
+  const list=$("review-list");
+  if(!Array.isArray(items)||!items.length){
+    list.innerHTML='<div class="empty">No pending approvals reported by the API.</div>';
+    setText("review-note","No pending reviews");return;
+  }
+  setText("review-note","Awaiting human decision");
+  list.innerHTML=items.map(item=>{
+    const id=item.seq;
+    return `<div class="review-row"><span><strong>${safe(item.agent||"Agent")}</strong> · ${safe(item.kind||item.action||"Action")} <span style="color:var(--muted)">#${safe(id)}</span></span><span style="display:flex;gap:6px"><button onclick="decideReview('${safe(id)}','approve')">Approve</button><button onclick="decideReview('${safe(id)}','reject')">Reject</button></span></div>`;
+  }).join("");
+}
+async function decideReview(id,decision){
+  const token=window.prompt("Enter the AEGIS review token to submit this decision:");
+  if(!token)return;
+  try{
+    const response=await fetch(decision==="approve"?"/approve":"/reject",{
+      method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
+      body:JSON.stringify({review_seq:Number(id)})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.detail||data.error||"Request rejected");
+    toast("Review decision submitted.");refresh();
+  }catch(err){toast("Review failed: "+err.message);}
+}
+async function getJSON(path){
+  const response=await fetch(path,{cache:"no-store"});
+  if(!response.ok)throw new Error(path+" returned "+response.status);
+  return response.json();
+}
+async function refresh(){
+  try{
+    const [stats,audit,pending]=await Promise.all([
+      getJSON("/stats"),getJSON("/audit"),getJSON("/pending")
+    ]);
+    const entries=Array.isArray(audit)?audit:(audit.entries||audit.records||[]);
+    const verdicts=stats.verdicts||{};
+    const total=Number(stats.total??entries.length??0);
+    const blocked=Number(verdicts.BLOCK??verdicts.block??0);
+    const review=Number(verdicts.REVIEW??verdicts.review??0);
+    const pendingItems=Array.isArray(pending)?pending:(pending.pending||pending.items||[]);
+    setText("connection","Engine Connected");setText("footer-status","AEGIS API Online");
+    setText("decision-total",number(total));setText("metric-total",number(total));
+    setText("metric-blocked",number(blocked));setText("metric-review",number(review));
+    setText("pending-count",number(pendingItems.length));
+    setText("blocked-total",number(blocked)+" blocked");
+    setText("blocked-percent",total?((blocked/total)*100).toFixed(1)+"%":"0%");
+    setText("decision-total",number(total));
+    setText("integrity-hint",stats.integrity_message||"Audit verification status");
+    const intact=stats.log_intact;
+    setText("metric-integrity",intact===true?"INTACT":intact===false?"CHECK":"—");
+    $("metric-integrity").style.fontSize="21px";
+    $("metric-integrity").style.color=intact===true?"var(--green)":intact===false?"var(--red)":"var(--text)";
+    renderVerdicts(verdicts);renderRisk(stats.risks||{});
+    renderAgents(stats.agents||{});
+    renderActivity(entries);
+    renderReviews(pendingItems);
+    const vals=Object.values(verdicts).map(Number);
+    makeBars("decision-chart",vals.length?vals:[0]);
+    try{
+      const verify=await getJSON("/audit/verify");
+      if(verify.intact===false||verify.valid===false){
+        setText("metric-integrity","CHECK");$("metric-integrity").style.color="var(--red)";
+        setText("integrity-hint",verify.message||"Audit verification reported an issue");
+      }
+    }catch(e){}
+    setText("last-updated","Last updated: "+new Date().toLocaleTimeString());
+  }catch(err){
+    setText("connection","API Unavailable");setText("footer-status","API Connection Error");
+    setText("last-updated","Update failed: "+err.message);
+  }
+}
+function tick(){
+  setText("clock",new Date().toLocaleTimeString());
+}
+tick();setInterval(tick,1000);refresh();setInterval(refresh,5000);
 </script>
 </body>
 </html>

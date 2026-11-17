@@ -1199,3 +1199,199 @@ button {
         transform: translateY(-5px);
     }
 }
+
+
+/* AEGIS OPERATIONS SHARED THEME */
+:root {
+    --aegis-bg: #030b11;
+    --aegis-panel: #091923;
+    --aegis-panel-soft: #0d202b;
+    --aegis-border: rgba(0, 221, 239, 0.16);
+    --aegis-cyan: #00dff5;
+    --aegis-text: #e8f5f8;
+    --aegis-muted: #829ba5;
+}
+
+html, body {
+    background: var(--aegis-bg) !important;
+    color: var(--aegis-text);
+}
+
+body {
+    background-image:
+        radial-gradient(ellipse at 78% 8%, rgba(0, 190, 215, 0.09), transparent 34%),
+        radial-gradient(ellipse at 12% 90%, rgba(0, 110, 145, 0.08), transparent 38%) !important;
+}
+
+.app {
+    background: transparent !important;
+}
+
+.sidebar {
+    background: rgba(4, 17, 25, 0.97) !important;
+    border-right: 1px solid var(--aegis-border) !important;
+    backdrop-filter: blur(18px);
+}
+
+.brand-mark {
+    background: linear-gradient(145deg, #073a48, #061b28) !important;
+    border: 1px solid rgba(0, 223, 245, 0.42) !important;
+    color: var(--aegis-cyan) !important;
+    box-shadow: 0 0 24px rgba(0, 210, 235, 0.13);
+}
+
+.brand-name,
+.topbar-label {
+    color: var(--aegis-text) !important;
+}
+
+.brand-subtitle,
+.sidebar-label,
+.command-note {
+    color: var(--aegis-muted) !important;
+}
+
+.nav-item {
+    border: 1px solid transparent;
+    transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+
+.nav-item:hover,
+.nav-item.active {
+    background: rgba(0, 205, 225, 0.09) !important;
+    border-color: rgba(0, 220, 240, 0.17) !important;
+    color: #e9fcff !important;
+}
+
+.nav-item.active {
+    box-shadow: inset 2px 0 0 var(--aegis-cyan);
+}
+
+.system-status-card {
+    background: linear-gradient(145deg, rgba(12, 34, 45, .96), rgba(6, 22, 31, .96)) !important;
+    border: 1px solid var(--aegis-border) !important;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, .18);
+}
+
+.status-card-label,
+.status-card-heading,
+.status-card-instance {
+    color: var(--aegis-text) !important;
+}
+
+.status-live,
+.topbar-dot,
+.connection-dot,
+.note-indicator {
+    color: var(--aegis-cyan) !important;
+}
+
+.main {
+    background: transparent !important;
+}
+
+.topbar {
+    background: rgba(4, 15, 23, 0.78) !important;
+    border-bottom: 1px solid var(--aegis-border) !important;
+    backdrop-filter: blur(16px);
+}
+
+.system-label {
+    color: var(--aegis-cyan) !important;
+}
+
+.welcome,
+.chat-screen {
+    color: var(--aegis-text) !important;
+}
+
+.welcome-eyebrow,
+.orb-status {
+    color: var(--aegis-cyan) !important;
+}
+
+.welcome-description {
+    color: #9bb2bb !important;
+}
+
+.suggestion {
+    background: rgba(11, 31, 41, 0.82) !important;
+    border: 1px solid var(--aegis-border) !important;
+    color: #c8dce2 !important;
+    transition: background .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.suggestion:hover {
+    background: rgba(0, 190, 215, 0.11) !important;
+    border-color: rgba(0, 223, 245, 0.48) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+}
+
+.command-area {
+    background: linear-gradient(180deg, transparent, rgba(3, 11, 17, .96) 24%) !important;
+}
+
+.command-box {
+    background: rgba(10, 29, 39, 0.96) !important;
+    border: 1px solid rgba(0, 215, 235, 0.24) !important;
+    box-shadow: 0 0 30px rgba(0, 160, 190, 0.08), 0 12px 35px rgba(0, 0, 0, .22);
+}
+
+.command-box:focus-within {
+    border-color: rgba(0, 223, 245, 0.65) !important;
+    box-shadow: 0 0 0 3px rgba(0, 210, 235, 0.07), 0 0 32px rgba(0, 190, 220, 0.12) !important;
+}
+
+.command-input {
+    color: var(--aegis-text) !important;
+    caret-color: var(--aegis-cyan);
+}
+
+.command-input::placeholder {
+    color: #718b96 !important;
+}
+
+.icon-button,
+.speaker-toggle,
+.sidebar-toggle {
+    color: #a9c1c9 !important;
+}
+
+.icon-button:hover,
+.speaker-toggle:hover,
+.sidebar-toggle:hover {
+    color: var(--aegis-cyan) !important;
+}
+
+.send-button {
+    background: linear-gradient(135deg, #00c8df, #008fae) !important;
+    color: #031117 !important;
+    box-shadow: 0 0 20px rgba(0, 210, 235, .18);
+}
+
+.send-button:hover {
+    filter: brightness(1.12);
+}
+
+.messages {
+    color: var(--aegis-text);
+}
+
+.message,
+.message-content,
+.assistant-message {
+    color: var(--aegis-text);
+}
+
+.focus-mic-button {
+    background: rgba(9, 28, 38, .96) !important;
+    border: 1px solid var(--aegis-border) !important;
+    color: var(--aegis-cyan) !important;
+}
+
+/* Keep the existing orb design; only harmonize its glow. */
+.orb-glow {
+    opacity: .8;
+    filter: saturate(1.15);
+}
