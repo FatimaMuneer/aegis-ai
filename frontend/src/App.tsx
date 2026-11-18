@@ -156,9 +156,9 @@ function App() {
     const centerY = 190
     const radius = 142
     const statusColor = (status: string) => {
-      if (status === 'running') return '#39d6a2'
-      if (status === 'error' || status === 'disconnected') return '#ff667b'
-      if (status === 'stale') return '#f1b95e'
+      if (status === 'running') return '#8fae78'
+      if (status === 'error' || status === 'disconnected') return '#ff7777'
+      if (status === 'stale') return '#e5aa55'
       return '#71849a'
     }
 
@@ -169,8 +169,8 @@ function App() {
         x: centerX,
         y: centerY,
         symbolSize: 76,
-        itemStyle: { color: '#173b50', borderColor: '#36cbd2', borderWidth: 3, shadowBlur: 22, shadowColor: 'rgba(54,203,210,0.35)' },
-        label: { show: true, color: '#e8eff7', fontSize: 15, fontWeight: 700, position: 'inside' }
+        itemStyle: { color: '#3b3022', borderColor: '#c6a36a', borderWidth: 3, shadowBlur: 22, shadowColor: 'rgba(198,163,106,0.25)' },
+        label: { show: true, color: '#f0f0ea', fontSize: 15, fontWeight: 700, position: 'inside' }
       },
       ...liveAgents.map((agent, index) => {
         const angle = (Math.PI * 2 * index / Math.max(liveAgents.length, 1)) - Math.PI / 2
@@ -182,21 +182,21 @@ function App() {
           y: centerY + Math.sin(angle) * radius,
           symbolSize: 48,
           itemStyle: {
-            color: '#132638',
+            color: '#292b30',
             borderColor: statusColor(status),
             borderWidth: 2,
             shadowBlur: status === 'running' ? 16 : 0,
             shadowColor: statusColor(status)
           },
-          label: { show: true, color: '#dce7f1', fontSize: 11, position: 'bottom', distance: 9 },
+          label: { show: true, color: '#f0f0ea', fontSize: 11, position: 'bottom', distance: 9 },
           status
         }
       })
     ]
 
-    const links = liveAgents.map((agent) => ({
+    const links = liveAgents.map((agent, index) => ({
       source: 'aegis-core',
-      target: String(agent.agent_id),
+      target: String(agent.agent_id ?? agent.name ?? `agent-${index}`),
       lineStyle: {
         color: statusColor(String(agent.status ?? 'unknown')),
         width: agent.status === 'running' ? 2.5 : 1.3,
@@ -211,9 +211,9 @@ function App() {
       animationDuration: 500,
       tooltip: {
         trigger: 'item',
-        backgroundColor: '#101c2b',
-        borderColor: '#26394d',
-        textStyle: { color: '#e6f1fa' },
+        backgroundColor: '#222428',
+        borderColor: '#45474d',
+        textStyle: { color: '#f0f0ea' },
         formatter: (params: AnyRecord) => {
           const data = params.data ?? {}
           if (data.id === 'aegis-core') return '<strong>AEGIS Governance Core</strong>'
@@ -222,14 +222,15 @@ function App() {
       },
       series: [{
         type: 'graph',
-        layout: 'none',
+        layout: 'force',
         coordinateSystem: null,
         roam: true,
         draggable: true,
+        force: { repulsion: 520, gravity: 0.16, edgeLength: 150, layoutAnimation: true },
         data: nodes,
         links,
         edgeSymbol: ['none', 'none'],
-        lineStyle: { color: '#36cbd2', opacity: 0.5, width: 1.5 },
+        lineStyle: { color: '#c6a36a', opacity: 0.5, width: 1.5 },
         emphasis: { focus: 'adjacency', lineStyle: { width: 3 } }
       }]
     }
@@ -271,16 +272,16 @@ function App() {
     backgroundColor: 'transparent',
     tooltip: {
       trigger: 'item',
-      backgroundColor: '#101c2b',
-      borderColor: '#26394d',
-      textStyle: { color: '#e6f1fa' }
+      backgroundColor: '#222428',
+      borderColor: '#45474d',
+      textStyle: { color: '#f0f0ea' }
     },
     legend: {
       bottom: 0,
       icon: 'circle',
       itemWidth: 7,
       itemHeight: 7,
-      textStyle: { color: '#8295a9', fontSize: 11 },
+      textStyle: { color: '#a0a19b', fontSize: 11 },
       data: ['Allowed', 'Blocked', 'Review']
     },
     series: [{
@@ -288,17 +289,17 @@ function App() {
       radius: ['62%', '82%'],
       center: ['50%', '43%'],
       avoidLabelOverlap: true,
-      itemStyle: { borderColor: '#101b29', borderWidth: 4, borderRadius: 5 },
+      itemStyle: { borderColor: '#222428', borderWidth: 4, borderRadius: 5 },
       label: { show: false },
       emphasis: {
         scale: true,
         scaleSize: 7,
-        label: { show: true, color: '#e6f1fa', fontSize: 13, fontWeight: 600, formatter: '{b}\n{c}' }
+        label: { show: true, color: '#f0f0ea', fontSize: 13, fontWeight: 600, formatter: '{b}\n{c}' }
       },
       data: [
-        { name: 'Allowed', value: allowCount, itemStyle: { color: '#35d6a0' } },
-        { name: 'Blocked', value: blockCount, itemStyle: { color: '#ff6378' } },
-        { name: 'Review', value: reviewCount, itemStyle: { color: '#f3b957' } }
+        { name: 'Allowed', value: allowCount, itemStyle: { color: '#8fae78' } },
+        { name: 'Blocked', value: blockCount, itemStyle: { color: '#ff7777' } },
+        { name: 'Review', value: reviewCount, itemStyle: { color: '#e5aa55' } }
       ]
     }]
   }), [allowCount, blockCount, reviewCount])
@@ -308,34 +309,41 @@ function App() {
     const entries = Object.entries(risks).filter(([, value]) => number(value) > 0)
     const labels = entries.length ? entries.map(([key]) => pretty(key)) : ['No risk data']
     const values = entries.length ? entries.map(([, value]) => number(value)) : [0]
+    const riskColor = (label: string) => {
+      const key = label.toLowerCase()
+      if (key.includes('critical') || key.includes('high')) return '#d97878'
+      if (key.includes('medium') || key.includes('moderate')) return '#e0ad63'
+      if (key.includes('low')) return '#8fae78'
+      return '#87909b'
+    }
     return {
       backgroundColor: 'transparent',
       grid: { left: 8, right: 18, top: 15, bottom: 30, containLabel: true },
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#101c2b',
-        borderColor: '#26394d',
-        textStyle: { color: '#e6f1fa' }
+        backgroundColor: '#222428',
+        borderColor: '#45474d',
+        textStyle: { color: '#f0f0ea' }
       },
       xAxis: {
         type: 'category',
         data: labels,
-        axisLabel: { color: '#8295a9', fontSize: 10, rotate: labels.length > 4 ? 20 : 0 },
-        axisLine: { lineStyle: { color: '#26394d' } },
+        axisLabel: { color: '#a0a19b', fontSize: 10, rotate: labels.length > 4 ? 20 : 0 },
+        axisLine: { lineStyle: { color: '#45474d' } },
         axisTick: { show: false }
       },
       yAxis: {
         type: 'value',
         minInterval: 1,
-        axisLabel: { color: '#8295a9', fontSize: 10 },
-        splitLine: { lineStyle: { color: '#1e2d3d', type: 'dashed' } }
+        axisLabel: { color: '#a0a19b', fontSize: 10 },
+        splitLine: { lineStyle: { color: '#3a3c42', type: 'dashed' } }
       },
       series: [{
         type: 'bar',
-        data: values,
+        data: values.map((value, index) => ({ value, itemStyle: { color: riskColor(labels[index]) } })),
         barMaxWidth: 34,
         itemStyle: {
-          color: '#32c9d0',
+          color: '#c6a36a',
           borderRadius: [5, 5, 0, 0]
         }
       }]
@@ -481,7 +489,7 @@ function App() {
           </div>
         </header>
 
-        <div className="page-content">
+        <div className="page-content" data-view={activeTab}>
           <section className="page-heading">
             <div>
               <div className="eyebrow"><span className="eyebrow-line" /> AUTONOMOUS SYSTEM OVERSIGHT</div>
@@ -494,6 +502,7 @@ function App() {
             </div>
           </section>
 
+{activeTab === 'Overview' && (
           <section className="live-monitor-grid">
             <div className="panel network-panel">
               <div className="panel-header">
@@ -518,7 +527,7 @@ function App() {
                   <span>Start your simulated agents to see them connected to the AEGIS core.</span>
                 </div>
               ) : (
-                <ReactECharts option={networkOption} style={{ height: 360, width: '100%' }} notMerge />
+                <ReactECharts option={networkOption} style={{ height: 520, width: '100%' }} notMerge />
               )}
               <div className="network-agent-strip">
                 {liveAgents.map((agent, index) => (
@@ -587,6 +596,9 @@ function App() {
             </div>
           </section>
 
+          )}
+
+{(activeTab === 'Overview' || activeTab === 'Governance') && (
           <section className="metric-grid">
             <MetricCard label="Total decisions" value={total} icon={<Activity />} detail="Recorded governance events" tone="cyan" />
             <MetricCard label="Allowed" value={allowCount} icon={<ShieldCheck />} detail="Permitted by policy" tone="green" />
@@ -594,7 +606,13 @@ function App() {
             <MetricCard label="Awaiting review" value={pending.length} icon={<Clock3 />} detail="Human decision required" tone="amber" />
           </section>
 
+          )}
+
+
+
+{(activeTab === 'Overview' || activeTab === 'Governance') && (
           <section className="dashboard-grid">
+            <div className="overview-left-column">
             <div className="panel decision-panel">
               <div className="panel-header">
                 <div><div className="panel-kicker">DECISION DISTRIBUTION</div><h2>Governance activity</h2></div>
@@ -635,8 +653,12 @@ function App() {
               <div className="integrity-row"><span>Pending decisions</span><strong>{pending.length}</strong></div>
               <div className="integrity-row"><span>API status</span><strong className={health === 'online' ? 'text-green' : 'text-red'}>{health === 'online' ? 'Connected' : 'Unavailable'}</strong></div>
             </div>
+            </div>
           </section>
 
+          )}
+
+{(activeTab === 'Overview' || activeTab === 'Governance' || activeTab === 'Human reviews') && (
           <section className="lower-grid">
             <div className="panel reviews-panel">
               <div className="panel-header">
@@ -680,6 +702,9 @@ function App() {
             </div>
           </section>
 
+          )}
+
+{(activeTab === 'Overview' || activeTab === 'Audit trail') && (
           <section className="panel audit-panel">
             <div className="panel-header audit-heading">
               <div><div className="panel-kicker">IMMUTABLE EVENT HISTORY</div><h2>Recent audit activity</h2></div>
@@ -713,6 +738,8 @@ function App() {
             </div>
             <div className="audit-footer"><span>Showing {Math.min(filteredAudit.length, 12)} of {filteredAudit.length} matching records</span><span>Source: AEGIS audit API</span></div>
           </section>
+
+          )}
 
           <footer className="page-footer">
             <span><span className="footer-mark">A</span> AEGIS.AI <span className="footer-separator">/</span> Accountability layer for autonomous agents</span>
