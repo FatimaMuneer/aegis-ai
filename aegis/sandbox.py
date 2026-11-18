@@ -61,7 +61,26 @@ class Sandbox:
 
         if ".." in parts:
             raise SandboxError("Path traversal is not allowed.")
+        if any(":" in part for part in parts):
+            raise SandboxError(
+                "Colon characters are not allowed in sandbox paths."
+            )
+        reserved_names = {
+            "CON",
+            "PRN",
+            "AUX",
+            "NUL",
+            *(f"COM{i}" for i in range(1, 10)),
+            *(f"LPT{i}" for i in range(1, 10)),
+        }
 
+        for part in parts:
+            device_name = part.split(".", 1)[0].rstrip(" .").upper()
+
+            if device_name in reserved_names:
+                raise SandboxError(
+                    "Windows reserved device names are not allowed."
+                )
         candidate = Path(*parts)
 
         if candidate.is_absolute() or candidate.drive:
@@ -103,7 +122,7 @@ class Sandbox:
         results = []
 
         for item in sorted(target.iterdir()):
-            if item.is_symlink():
+            if item.is_symlink() or self._is_reparse_point(item):
                 continue
 
             results.append({

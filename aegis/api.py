@@ -12,21 +12,26 @@ Settings (environment variables, all optional):
 """
 
 import os
+import secrets
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi.security import HTTPBearer
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from . import __version__, learn, policy
+from .approvals import ApprovalError, ApprovalStore
 from .chat import handle_message
 from .engine import Engine
+from .sandbox import Sandbox, SandboxError
+import json
 
 
 ROOT = Path(__file__).resolve().parent.parent
-DASHBOARD = Path(__file__).parent / "dashboard" / "index.html"
+DASHBOARD = Path(__file__).parent / "dashboard" / "operations.html"
 
 
 def build_engine() -> Engine:
@@ -57,6 +62,8 @@ app = FastAPI(
     version=__version__,
     description="The accountability layer for AI agents.",
 )
+
+reviewer_bearer = HTTPBearer(auto_error=False)
 
 app.mount(
     "/dashboard",
@@ -92,15 +99,88 @@ class ChatIn(BaseModel):
     )
 
 
-class ApproveIn(BaseModel):
-    action: str
-    kind: str = "other"
-    agent: str = "default"
+class ReviewIn(BaseModel):
+    review_seq: int = Field(..., ge=1)
+
+
+class ApprovalConsumeIn(BaseModel):
+    approval_id: str = Field(..., min_length=1, max_length=64)
+    action: str = Field(..., min_length=1, max_length=10000)
+    kind: str = Field(..., min_length=1, max_length=32)
+    agent: str = Field(..., min_length=1, max_length=128)
 
 
 class RuleIn(BaseModel):
     pattern: str
     reason: str
+
+
+class SandboxExecuteIn(BaseModel):
+    operation: str = Field(..., min_length=1, max_length=32)
+    path: str = Field(".", min_length=1, max_length=1024)
+    content: Optional[str] = Field(None, max_length=1048576)
+    approval_id: Optional[str] = Field(None, min_length=1, max_length=64)
+    agent: str = Field("default", min_length=1, max_length=128)
+
+
+
+def get_approval_store() -> ApprovalStore:
+    """Use an approval database associated with the active audit log."""
+    configured = os.environ.get("AEGIS_APPROVALS")
+    if configured:
+        path = configured
+    else:
+        audit_path = Path(engine.audit.path)
+        path = audit_path.with_name(
+            audit_path.stem + ".approvals.sqlite3"
+        )
+    return ApprovalStore(path)
+
+
+def get_review_entry(review_seq: int) -> dict:
+    """Find one genuine REVIEW event in the current audit log."""
+    intact, message = engine.audit.verify()
+    if not intact:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Audit log integrity check failed: {message}",
+        )
+
+    matches = [
+        entry
+        for entry in engine.audit.read_all()
+        if entry.get("seq") == review_seq
+        and entry.get("verdict") == "REVIEW"
+    ]
+
+    if len(matches) != 1:
+        raise HTTPException(
+            status_code=404,
+            detail="Review event not found.",
+        )
+
+    return matches[0]
+
+
+def require_reviewer(authorization: Optional[str]):
+    """Require a configured reviewer token for approval operations."""
+    expected = os.environ.get("AEGIS_REVIEW_TOKEN", "")
+
+    if len(expected) < 32:
+        raise HTTPException(
+            status_code=503,
+            detail="Reviewer authentication is not configured. Set AEGIS_REVIEW_TOKEN to a secret of at least 32 characters.",
+        )
+
+    supplied = ""
+    if authorization and authorization.lower().startswith("bearer "):
+        supplied = authorization[7:].strip()
+
+    if not supplied or not secrets.compare_digest(supplied, expected):
+        raise HTTPException(
+            status_code=401,
+            detail="Valid reviewer authentication is required.",
+        )
 
 
 # ---------- routes ----------
@@ -250,28 +330,18 @@ def stats():
 
 @app.get("/pending")
 def pending():
-    """Return REVIEW decisions awaiting human approval."""
-
+    """Return REVIEW events that have not been resolved."""
+    store = get_approval_store()
     entries = engine.audit.read_all()
 
-    resolved = {
-        (entry.get("original"), entry.get("kind"), entry.get("agent"))
-        for entry in entries
-        if entry.get("verdict") in ("HUMAN_APPROVED", "HUMAN_REJECTED")
-    }
+    waiting = []
+    for entry in entries:
+        if entry.get("verdict") != "REVIEW":
+            continue
 
-    waiting = [
-        entry
-        for entry in entries
-        if (
-            entry.get("verdict") == "REVIEW"
-            and (
-                entry.get("original"),
-                entry.get("kind"),
-                entry.get("agent"),
-            ) not in resolved
-        )
-    ]
+        record = store.get_for_review(entry["seq"])
+        if record is None:
+            waiting.append(entry)
 
     return {
         "count": len(waiting),
@@ -280,34 +350,365 @@ def pending():
 
 
 @app.post("/approve")
-def approve(body: ApproveIn):
-    """Record a human approval."""
-
-    entry = learn.record_approval(
-        engine.audit,
-        body.action,
-        body.agent,
-        body.kind,
+def approve(body: ReviewIn, credentials=Depends(reviewer_bearer)):
+    """Approve one exact REVIEW event. This does not execute it."""
+    require_reviewer(
+        f"Bearer {credentials.credentials}" if credentials else None
     )
+    review = get_review_entry(body.review_seq)
+    store = get_approval_store()
+
+    try:
+        grant = store.approve(
+            review_seq=review["seq"],
+            action=review["original"],
+            kind=review.get("kind", "other"),
+            agent=review.get("agent", "default"),
+        )
+    except ApprovalError as error:
+        raise HTTPException(status_code=409, detail=str(error))
+
+    try:
+        entry = engine.audit.append({
+            "verdict": "APPROVAL_GRANTED",
+            "agent": review.get("agent", "default"),
+            "kind": review.get("kind", "other"),
+            "original": review["original"],
+            "rule": "HUMAN",
+            "reason": "human approval recorded; no action executed",
+            "review_seq": review["seq"],
+            "approval_id": grant["approval_id"],
+            "expires_at": grant["expires_at"],
+        })
+    except Exception:
+        store.rollback_resolution(review["seq"], grant["approval_id"])
+        raise HTTPException(
+            status_code=503,
+            detail="Audit recording failed. The approval grant was rolled back.",
+        )
 
     return {
         "recorded": True,
-        "seq": entry["seq"],
+        "status": grant["status"],
+        "approval_id": grant["approval_id"],
+        "review_seq": grant["review_seq"],
+        "expires_at": grant["expires_at"],
+        "audit_seq": entry["seq"],
+        "executed": False,
     }
 
 
 @app.post("/reject")
-def reject(body: ApproveIn):
-    """Record a human rejection without executing the action."""
-    entry = engine.audit.append({
-        "verdict": "HUMAN_REJECTED",
-        "agent": body.agent,
-        "kind": body.kind,
-        "original": body.action,
-        "rule": "HUMAN",
-        "reason": "rejected by a person",
-    })
-    return {"recorded": True, "seq": entry["seq"]}
+def reject(body: ReviewIn, authorization: Optional[str] = Header(None)):
+    """Reject one exact REVIEW event. No grant or execution is created."""
+    require_reviewer(authorization)
+    review = get_review_entry(body.review_seq)
+    store = get_approval_store()
+
+    try:
+        result = store.reject(
+            review_seq=review["seq"],
+            action=review["original"],
+            kind=review.get("kind", "other"),
+            agent=review.get("agent", "default"),
+        )
+    except ApprovalError as error:
+        raise HTTPException(status_code=409, detail=str(error))
+
+    try:
+        entry = engine.audit.append({
+            "verdict": "APPROVAL_REJECTED",
+            "agent": review.get("agent", "default"),
+            "kind": review.get("kind", "other"),
+            "original": review["original"],
+            "rule": "HUMAN",
+            "reason": "rejected by a person; no action executed",
+            "review_seq": review["seq"],
+        })
+    except Exception:
+        store.rollback_resolution(review["seq"])
+        raise HTTPException(
+            status_code=503,
+            detail="Audit recording failed. The rejection record was rolled back.",
+        )
+
+    return {
+        "recorded": True,
+        "status": result["status"],
+        "review_seq": result["review_seq"],
+        "audit_seq": entry["seq"],
+        "executed": False,
+    }
+
+
+@app.get("/approvals")
+def approvals(authorization: Optional[str] = Header(None)):
+    """Return recent approval and rejection history to authenticated reviewers."""
+    require_reviewer(authorization)
+    return {"entries": get_approval_store().list_recent()}
+
+
+@app.post("/consume")
+def consume_approval(
+    body: ApprovalConsumeIn,
+    authorization: Optional[str] = Header(None),
+):
+    """Consume a one-time grant after a fresh independent security evaluation.
+
+    This endpoint authorizes only. It never executes shell commands.
+    """
+    require_reviewer(authorization)
+
+    store = get_approval_store()
+    grant = store.get_by_approval(body.approval_id)
+
+    if grant is None:
+        raise HTTPException(status_code=404, detail="Approval not found.")
+
+    review = get_review_entry(grant["review_seq"])
+
+    if (
+        body.action != review.get("original")
+        or body.kind != review.get("kind", "other")
+        or body.agent != review.get("agent", "default")
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="The submitted action does not match the original reviewed event.",
+        )
+
+    # Re-evaluate from scratch. Approval cannot override BLOCK, REVIEW or CORRECT.
+    decision = engine.evaluate(
+        body.action,
+        kind=body.kind,
+        agent=body.agent,
+    )
+    fresh = decision.to_dict()
+    verdict = str(fresh.get("verdict", "")).upper()
+
+    if verdict != "ALLOW":
+        raise HTTPException(
+            status_code=409,
+            detail=f"Fresh AEGIS evaluation returned {verdict or 'an unknown verdict'}. Authorization denied.",
+        )
+
+    try:
+        result = store.consume(
+            body.approval_id,
+            body.action,
+            body.kind,
+            body.agent,
+        )
+    except ApprovalError as error:
+        raise HTTPException(status_code=409, detail=str(error))
+
+    try:
+        entry = engine.audit.append({
+            "verdict": "APPROVAL_CONSUMED",
+            "agent": body.agent,
+            "kind": body.kind,
+            "original": body.action,
+            "rule": "HUMAN",
+            "reason": "one-time grant consumed after fresh ALLOW evaluation; no action executed",
+            "review_seq": result["review_seq"],
+            "approval_id": result["approval_id"],
+        })
+    except Exception:
+        # The grant remains consumed. Fail closed rather than risk reuse.
+        raise HTTPException(
+            status_code=503,
+            detail="Grant consumed, but the final audit event could not be written. No action was executed.",
+        )
+
+    return {
+        "authorized": True,
+        "status": "CONSUMED",
+        "approval_id": result["approval_id"],
+        "review_seq": result["review_seq"],
+        "audit_seq": entry["seq"],
+        "executed": False,
+        "message": "Authorization consumed. No command or external action was executed.",
+    }
+
+
+
+
+@app.post("/sandbox/execute")
+def sandbox_execute(
+    body: SandboxExecuteIn,
+    credentials = Depends(reviewer_bearer),
+):
+    """Execute only registered sandbox operations after fresh AEGIS evaluation."""
+    require_reviewer(f"Bearer {credentials.credentials}" if credentials else None)
+
+    if body.operation not in {
+        "list_files", "read_file", "write_file", "delete_file"
+    }:
+        raise HTTPException(status_code=400, detail="Unregistered sandbox operation.")
+
+    if body.operation == "write_file" and body.content is None:
+        raise HTTPException(status_code=400, detail="write_file requires content.")
+
+    if body.operation != "write_file" and body.content is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="content is accepted only for write_file."
+        )
+
+    request = {"operation": body.operation, "path": body.path}
+    if body.operation == "write_file":
+        request["content"] = body.content
+
+    action = json.dumps(request, sort_keys=True, separators=(",", ":"))
+    kind = "sandbox"
+    agent = body.agent
+
+    # Fresh evaluation immediately before any execution.
+    decision = engine.evaluate(action, kind=kind, agent=agent)
+    verdict = str(
+        getattr(decision.verdict, "value", decision.verdict)
+    ).upper()
+
+    if verdict == "BLOCK":
+        raise HTTPException(
+            status_code=403,
+            detail="AEGIS BLOCK: sandbox operation was not executed."
+        )
+
+    approval_result = None
+
+    if verdict == "REVIEW":
+        if not body.approval_id:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "Human approval required. Approve the matching REVIEW "
+                    "audit event, then submit its approval_id."
+                )
+            )
+
+        store = get_approval_store()
+        grant = store.get_by_approval(body.approval_id)
+
+        if grant is None:
+            raise HTTPException(status_code=404, detail="Approval not found.")
+
+        review = get_review_entry(grant["review_seq"])
+
+        if (
+            review.get("original") != action
+            or review.get("kind") != kind
+            or review.get("agent") != agent
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail="Approval does not match this exact sandbox request."
+            )
+
+        try:
+            approval_result = store.consume(
+                body.approval_id, action, kind, agent
+            )
+        except ApprovalError as error:
+            raise HTTPException(status_code=409, detail=str(error))
+
+    elif verdict != "ALLOW":
+        raise HTTPException(
+            status_code=409,
+            detail=f"AEGIS returned {verdict}; execution denied."
+        )
+
+    # Record authorization before touching the filesystem.
+    try:
+        engine.audit.append({
+            "verdict": "SANDBOX_EXECUTION_AUTHORIZED",
+            "agent": agent,
+            "kind": kind,
+            "original": action,
+            "rule": "AEGIS",
+            "reason": "Fresh evaluation passed; registered sandbox operation only.",
+            "approval_id": (
+                approval_result["approval_id"] if approval_result else None
+            ),
+            "review_seq": (
+                approval_result["review_seq"] if approval_result else None
+            ),
+        })
+    except Exception:
+        raise HTTPException(
+            status_code=503,
+            detail="Authorization audit failed. No operation was executed."
+        )
+
+    sandbox = Sandbox()
+
+    try:
+        if body.operation == "list_files":
+            result = sandbox.list_files(body.path)
+        elif body.operation == "read_file":
+            result = sandbox.read_file(body.path)
+        elif body.operation == "write_file":
+            result = sandbox.write_file(body.path, body.content)
+        else:
+            result = sandbox.delete_file(body.path)
+
+    except SandboxError as error:
+        try:
+            engine.audit.append({
+                "verdict": "SANDBOX_EXECUTION_FAILED",
+                "agent": agent,
+                "kind": kind,
+                "original": action,
+                "rule": "SANDBOX",
+                "reason": str(error),
+            })
+        except Exception:
+            pass
+
+        raise HTTPException(status_code=400, detail=str(error))
+
+    except Exception:
+        try:
+            engine.audit.append({
+                "verdict": "SANDBOX_EXECUTION_FAILED",
+                "agent": agent,
+                "kind": kind,
+                "original": action,
+                "rule": "SANDBOX",
+                "reason": "Unexpected execution error.",
+            })
+        except Exception:
+            pass
+
+        raise HTTPException(status_code=500, detail="Sandbox operation failed.")
+
+    try:
+        entry = engine.audit.append({
+            "verdict": "SANDBOX_EXECUTED",
+            "agent": agent,
+            "kind": kind,
+            "original": action,
+            "rule": "SANDBOX",
+            "reason": "Registered sandbox operation completed.",
+            "result": result if body.operation != "read_file" else {
+                "read": True, "characters": len(result)
+            },
+        })
+    except Exception:
+        raise HTTPException(
+            status_code=503,
+            detail="Operation completed, but its outcome audit could not be recorded."
+        )
+
+    return {
+        "executed": True,
+        "operation": body.operation,
+        "result": result,
+        "audit_seq": entry["seq"],
+        "approval_id": (
+            approval_result["approval_id"] if approval_result else None
+        ),
+    }
 
 
 @app.get("/learn/suggestions")
