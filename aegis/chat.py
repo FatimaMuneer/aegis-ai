@@ -9,6 +9,7 @@ import json
 import re
 from pathlib import Path
 from .assistant import ask_ai
+from .agent_monitor import get_agent_status
 from .engine import Engine, verdict_name
 from .intent import interpret_intent
 
@@ -160,6 +161,9 @@ def general_response(
         "soc_guard": "SOC action security checks",
     }
 
+    live_status = get_agent_status()
+    live_agents = live_status["agents"]
+
     entries = engine.audit.read_all()
     verdicts = {}
     kinds = {}
@@ -193,12 +197,26 @@ Project: AEGIS
 Python modules found in aegis/: {len(module_files)}
 {chr(10).join(module_lines)}
 
-AGENT INFORMATION
-Distinct agent names observed in audit history: {len(agent_names)}
+LIVE REGISTERED AGENT STATUS
+Registered agents: {live_status['total_agents']}
+Currently running agents: {live_status['connected_count']}
+{chr(10).join(
+    f"- {agent['name']}: {agent['status']}. "
+    f"Last action: {agent.get('last_action') or 'No action recorded'}. "
+    f"Last verdict: {agent.get('last_verdict') or 'None'}."
+    for agent in live_agents
+)}
+
+These statuses come from the shared AEGIS runtime monitoring registry.
+Only agents with status 'running' count as currently running.
+A status of 'stale', 'stopped', 'disconnected', 'error', or
+'not_started' must not be described as running.
+
+AUDIT-OBSERVED ACTOR NAMES
+Distinct names found in historical audit records: {len(agent_names)}
 Observed names: {', '.join(agent_names) if agent_names else 'None recorded'}
-Important: these are audit-observed names, NOT proof of currently running
-or independently connected agents. No dedicated agent registry was found
-in the inspected backend code.
+These are historical audit actors, NOT necessarily registered agents.
+Names such as 'chat' and 'default' must not be counted as registered agents.
 
 LIVE AUDIT STATISTICS
 Total audit entries: {len(entries)}
