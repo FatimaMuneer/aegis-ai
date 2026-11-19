@@ -25,9 +25,11 @@ from pydantic import BaseModel, Field
 from . import __version__, learn, policy
 from .approvals import ApprovalError, ApprovalStore
 from .chat import handle_message
+from .agent_monitor import get_agent_status
 from .engine import Engine
 from .sandbox import Sandbox, SandboxError
 import json
+from datetime import datetime, timezone
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -44,8 +46,13 @@ def build_engine() -> Engine:
     if not db_path and (ROOT / "data" / "demo.db").exists():
         db_path = str(ROOT / "data" / "demo.db")
 
+    configured_audit = os.environ.get("AEGIS_AUDIT")
+    recovered_audit = ROOT / "aegis_audit.recovered.jsonl"
+    default_audit = recovered_audit if recovered_audit.exists() else ROOT / "aegis_audit.jsonl"
+    audit_path = configured_audit or str(default_audit)
+
     return Engine(
-        audit_path=os.environ.get("AEGIS_AUDIT", "aegis_audit.jsonl"),
+        audit_path=audit_path,
         db_path=db_path,
         use_ai_risk=bool(general.get("use_ai_risk", False)),
         block_at=general.get("block_at", "CRITICAL"),
@@ -294,6 +301,14 @@ def audit_verify():
         "intact": ok,
         "message": message,
     }
+
+
+
+
+@app.get("/agents/status")
+def agent_status():
+    """Read-only status and recent event history for simulated agents."""
+    return get_agent_status()
 
 
 @app.get("/stats")

@@ -37,3 +37,18 @@ results/charts/
 
 # AEGIS local sandbox workspace
 .aegis_sandbox/
+
+# AEGIS simulated agent runtime data
+agents/data/
+
+# Local backups and temporary archives
+*.backup
+*.backup_*
+*.before_*
+*.zip
+
+# Local audit databases, logs, recovery files and locks
+aegis_audit*
+*.sqlite3
+*.lock
+*.corrupt_tail.txt

@@ -7,8 +7,9 @@ The deterministic Engine makes all security decisions.
 
 import json
 import re
-
+from pathlib import Path
 from .assistant import ask_ai
+from .agent_monitor import get_agent_status
 from .engine import Engine, verdict_name
 from .intent import interpret_intent
 
@@ -122,10 +123,133 @@ def explain(decision) -> str:
     return "\n".join(lines)
 
 
-def general_response(message: str, history: list | None = None) -> str:
-    """Generate a natural-language response using Groq."""
+def general_response(
+    engine: Engine,
+    message: str,
+    history: list | None = None,
+) -> str:
+    """Generate a response using verified project and runtime context."""
 
-    return ask_ai(message, history=history)
+    project_root = Path(__file__).resolve().parent.parent
+    module_files = sorted(
+        path.stem
+        for path in (project_root / "aegis").glob("*.py")
+        if path.name != "__init__.py"
+    )
+
+    descriptions = {
+        "api": "FastAPI endpoints and backend interface",
+        "approvals": "Human approval and one-time approval grants",
+        "assistant": "Groq-powered conversational assistant",
+        "audit": "Audit event storage and integrity verification",
+        "baseline": "Baseline functionality",
+        "behavior": "Agent behavior analysis",
+        "chat": "Chat commands and security-action routing",
+        "db_guard": "Database security checks",
+        "dryrun": "Dry-run support",
+        "engine": "Deterministic security decision engine",
+        "export": "Audit/data export",
+        "intent": "Natural-language intent interpretation",
+        "learn": "Learning and rule suggestions",
+        "mcp_proxy": "MCP proxy functionality",
+        "models": "Request and data models",
+        "ops_guard": "Operations security checks",
+        "policy": "Security policy definitions",
+        "risk": "Risk assessment",
+        "sandbox": "Sandbox execution functionality",
+        "sandbox_guard": "Sandbox security checks",
+        "soc_guard": "SOC action security checks",
+    }
+
+    live_status = get_agent_status()
+    live_agents = live_status["agents"]
+
+    entries = engine.audit.read_all()
+    verdicts = {}
+    kinds = {}
+    risks = {}
+    observed_agents = set()
+
+    for entry in entries:
+        verdict = str(entry.get("verdict", "unknown"))
+        kind = str(entry.get("kind", "unknown"))
+        risk = str(entry.get("risk", "unknown"))
+        agent = str(entry.get("agent", "unknown"))
+
+        verdicts[verdict] = verdicts.get(verdict, 0) + 1
+        kinds[kind] = kinds.get(kind, 0) + 1
+        risks[risk] = risks.get(risk, 0) + 1
+
+        if agent and agent.lower() != "unknown":
+            observed_agents.add(agent)
+
+    intact, integrity_message = engine.audit.verify()
+
+    module_lines = [
+        f"- {name}: {descriptions.get(name, 'Project Python module')}"
+        for name in module_files
+    ]
+
+    agent_names = sorted(observed_agents)
+
+    context = f"""PROJECT ARCHITECTURE
+Project: AEGIS
+Python modules found in aegis/: {len(module_files)}
+{chr(10).join(module_lines)}
+
+LIVE REGISTERED AGENT STATUS
+Registered agents: {live_status['total_agents']}
+Currently running agents: {live_status['connected_count']}
+{chr(10).join(
+    f"- {agent['name']}: {agent['status']}. "
+    f"Last action: {agent.get('last_action') or 'No action recorded'}. "
+    f"Last verdict: {agent.get('last_verdict') or 'None'}."
+    for agent in live_agents
+)}
+
+These statuses come from the shared AEGIS runtime monitoring registry.
+Only agents with status 'running' count as currently running.
+A status of 'stale', 'stopped', 'disconnected', 'error', or
+'not_started' must not be described as running.
+
+AUDIT-OBSERVED ACTOR NAMES
+Distinct names found in historical audit records: {len(agent_names)}
+Observed names: {', '.join(agent_names) if agent_names else 'None recorded'}
+These are historical audit actors, NOT necessarily registered agents.
+Names such as 'chat' and 'default' must not be counted as registered agents.
+
+LIVE AUDIT STATISTICS
+Total audit entries: {len(entries)}
+Verdicts: {verdicts}
+Action kinds: {kinds}
+Risk levels: {risks}
+Audit integrity: {"INTACT" if intact else "WARNING"}
+Integrity detail: {integrity_message}
+
+SECURITY ARCHITECTURE
+- FastAPI backend exposes the AEGIS API.
+- The deterministic Engine makes security decisions.
+- Groq handles ordinary conversation and intent interpretation.
+- The policy engine and security guards evaluate actions.
+- REVIEW decisions require the human approval workflow.
+- Approval grants permission; approval alone does not execute an action.
+- Sandbox execution has a separate guarded execution path.
+- Audit records and integrity verification provide accountability.
+
+ACCURACY RULES
+- Do not describe audit-observed agents as active connections.
+- Do not invent a count of running agents or connected external scripts.
+- A Python module is not automatically an independently running agent.
+- Do not claim access to files, processes, networks, or services unless
+  the backend context explicitly establishes that capability.
+- Never claim to approve, execute, or override security decisions.
+"""
+
+    return ask_ai(
+        message,
+        history=history,
+        system_context=context,
+    )
 
 
 def evaluate_action(engine, action, kind, agent):
@@ -255,7 +379,7 @@ def interpret_natural_language(
 
     if intent == "conversation":
         return {
-            "reply": general_response(message, history),
+            "reply": general_response(engine, message, history),
             "decision": None
         }
 
