@@ -8,143 +8,648 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --bg:#020b10; --panel:rgba(4,23,31,.88); --panel2:rgba(5,30,39,.76);
-  --line:rgba(0,218,239,.34); --cyan:#00e5f5; --cyan2:#00aebf;
-  --text:#eefbff; --muted:#91aab4; --green:#00e6ad;
-  --red:#ff5476; --amber:#ffbd55;
+  --bg: #020b10;
+  --panel: rgba(4, 23, 31, .88);
+  --panel2: rgba(5, 30, 39, .76);
+  --line: rgba(0, 218, 239, .34);
+  --cyan: #00e5f5;
+  --cyan2: #00aebf;
+  --text: #eefbff;
+  --muted: #91aab4;
+  --green: #00e6ad;
+  --red: #ff5476;
+  --amber: #ffbd55;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0;background:
-  radial-gradient(ellipse at 49% 43%,rgba(0,139,167,.17),transparent 34%),
-  radial-gradient(ellipse at 0% 30%,rgba(0,195,218,.11),transparent 28%),
-  radial-gradient(ellipse at 100% 8%,rgba(0,180,205,.12),transparent 26%),
-  #02090e;color:var(--text);font-family:Inter,Arial,sans-serif;min-height:100vh;
-  overflow-x:hidden;
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(ellipse at 49% 43%, rgba(0, 139, 167, .17), transparent 34%),
+    radial-gradient(ellipse at 0% 30%, rgba(0, 195, 218, .11), transparent 28%),
+    radial-gradient(ellipse at 100% 8%, rgba(0, 180, 205, .12), transparent 26%),
+    #02090e;
+  color: var(--text);
+  font-family: Inter, Arial, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
-body:before{
-  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.23;
-  background-image:radial-gradient(rgba(0,220,240,.65) .7px,transparent .7px);
-  background-size:17px 17px;mask-image:linear-gradient(90deg,#000,transparent 24%,transparent 76%,#000);
+body:before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: .23;
+  background-image: radial-gradient(rgba(0, 220, 240, .65) .7px, transparent .7px);
+  background-size: 17px 17px;
+  mask-image: linear-gradient(90deg, #000, transparent 24%, transparent 76%, #000);
 }
-button,a{font:inherit}
-a{color:inherit;text-decoration:none}
-button{cursor:pointer}
-.shell{max-width:1600px;margin:auto;padding:18px 3.4% 0}
-.topbar{height:70px;display:flex;align-items:center;justify-content:space-between;gap:22px}
-.brand{display:flex;align-items:center;gap:13px;min-width:245px}
-.brand-mark{width:43px;height:48px;filter:drop-shadow(0 0 10px #00ddeb)}
-.brand-name{font-size:23px;font-weight:700;letter-spacing:1.5px}
-.brand-sub{font-size:11px;color:#b2c8d0;margin-top:3px}
-.nav{display:flex;align-items:center;gap:5px;padding:7px;border:1px solid rgba(0,205,226,.18);border-radius:15px;background:rgba(4,28,37,.76)}
-.nav a{font-size:12px;color:#b8cbd1;padding:11px 17px;border-radius:9px}
-.nav a.active,.nav a:hover{background:rgba(0,219,237,.15);color:var(--cyan)}
-.top-right{display:flex;gap:10px}
-.thumb{width:68px;height:56px;border:1px solid rgba(0,218,239,.24);border-radius:12px;background:linear-gradient(145deg,#07313b,#03131b);display:grid;place-items:center;color:var(--cyan);font-size:21px}
-.hero{display:grid;grid-template-columns:1.8fr 1fr;gap:28px;align-items:center;padding:28px 0 22px}
-.hero-main{text-align:center;padding:0 3%}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:rgba(0,190,215,.09);border-radius:30px;padding:9px 15px;color:var(--cyan);font-size:11px;font-weight:600}
-.hero h1{font-size:clamp(31px,4vw,48px);line-height:1.08;letter-spacing:-1.8px;margin:15px 0 10px;font-weight:600}
-.hero p{font-size:13px;line-height:1.7;color:#b3c8d0;max-width:590px;margin:0 auto}
-.actions{display:flex;justify-content:center;gap:12px;margin-top:17px}
-.btn{border:1px solid var(--line);border-radius:11px;padding:11px 17px;background:rgba(0,211,231,.1);color:#dffcff;font-size:12px;font-weight:600;display:inline-flex;gap:9px;align-items:center}
-.btn.primary{background:linear-gradient(110deg,#6af8ff,#00cddd);color:#00232a;border:0;box-shadow:0 0 22px rgba(0,220,239,.24)}
-.btn:hover{filter:brightness(1.16);transform:translateY(-1px)}
-.hero-side{text-align:center;padding:10px}
-.hero-side h2{font-size:19px;font-weight:600;margin:12px 0 7px}
-.hero-side p{font-size:11px;color:var(--muted);line-height:1.6}
-.section-label{font-size:10px;color:var(--cyan);letter-spacing:1.3px;text-transform:uppercase}
-.main-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px;align-items:stretch}
-.console{
-  border:1px solid rgba(0,222,241,.65);border-radius:19px;overflow:hidden;
-  background:linear-gradient(145deg,rgba(5,31,41,.94),rgba(1,12,19,.96));
-  box-shadow:0 0 35px rgba(0,204,228,.12),inset 0 0 28px rgba(0,204,228,.035);
-  min-height:425px;position:relative;
+button, a { font: inherit; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; background: none; border: 0; color: inherit; }
+
+.shell { max-width: 1600px; margin: auto; padding: 18px 3.4% 0; }
+
+/* TOPBAR */
+.topbar {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  position: relative;
+  z-index: 20;
 }
-.console:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 35%,rgba(0,222,240,.045),transparent 65%)}
-.console-toolbar{height:53px;display:flex;align-items:center;gap:8px;padding:0 15px;border-bottom:1px solid rgba(0,207,226,.18);background:rgba(0,8,13,.4);position:relative;z-index:2}
-.rail{width:40px;display:flex;gap:10px;flex-direction:column;align-items:center;border-right:1px solid rgba(0,205,226,.17);padding:15px 0}
-.rail span{width:29px;height:29px;border:1px solid rgba(0,212,232,.22);border-radius:8px;display:grid;place-items:center;color:#80cbd4;font-size:13px}
-.rail span.selected{color:var(--cyan);background:rgba(0,222,239,.13);box-shadow:0 0 12px rgba(0,222,239,.15)}
-.toolbar-chip{font-size:10px;color:#c1d7dd;border:1px solid rgba(0,204,224,.17);border-radius:8px;padding:8px 10px;background:rgba(0,16,23,.6)}
-.toolbar-spacer{flex:1}
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green);display:inline-block;margin-right:5px}
-.console-content{display:grid;grid-template-columns:40px 1fr;min-height:370px;position:relative}
-.console-work{padding:15px 13px 14px;min-width:0}
-.console-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.console-heading h2{font-size:18px;margin:0 0 5px;font-weight:600}
-.console-heading p{font-size:10px;color:var(--muted);margin:0}
-.console-heading .tag{font-size:9px;color:var(--green);border:1px solid rgba(0,230,173,.25);padding:6px 8px;border-radius:7px}
-.world-layout{display:grid;grid-template-columns:1fr 1.45fr 1fr;gap:10px;align-items:center;min-height:285px;margin-top:4px}
-.mini-stack{display:flex;flex-direction:column;gap:10px;z-index:2}
-.mini-card{border:1px solid rgba(0,205,228,.28);background:rgba(0,17,24,.83);border-radius:12px;padding:11px;min-width:0;box-shadow:inset 0 0 18px rgba(0,196,220,.035)}
-.mini-card h3{font-size:10px;font-weight:600;margin:0 0 9px}
-.mini-card .big{font-size:24px;letter-spacing:-1px}
-.mini-card small{font-size:9px;color:var(--muted)}
-.chart{height:58px;width:100%;display:block;margin-top:7px}
-.spark{height:37px;width:100%;display:block;margin-top:8px}
-.globe-wrap{height:260px;display:grid;place-items:center;position:relative;min-width:0}
-.globe-wrap:before,.globe-wrap:after{content:"";position:absolute;border:1px solid rgba(0,216,240,.38);border-radius:50%;width:90%;height:27%;bottom:5px;box-shadow:0 0 17px rgba(0,216,240,.18)}
-.globe-wrap:after{width:72%;height:18%;bottom:17px;opacity:.7}
-.globe{width:100%;max-width:320px;filter:drop-shadow(0 0 18px rgba(0,207,242,.4));animation:float 5s ease-in-out infinite}
-@keyframes float{50%{transform:translateY(-7px)}}
-.globe-grid{fill:none;stroke:#00dff5;stroke-width:.8;opacity:.42}
-.globe-land{fill:#00c8d9;opacity:.19;stroke:#00dff5;stroke-width:1}
-.orbit{fill:none;stroke:#00dff5;stroke-width:1;opacity:.7}
-.node{fill:#a8fbff;filter:drop-shadow(0 0 4px #00dff5)}
-.side-column{display:grid;grid-template-rows:auto 1fr 1fr;gap:12px}
-.side-intro{text-align:center;padding:7px 3px 5px}
-.side-intro h2{font-size:18px;margin:8px 0}
-.side-intro p{font-size:10px;color:var(--muted);margin:0}
-.analytics-card{border:1px solid rgba(0,210,230,.4);border-radius:14px;padding:15px;background:linear-gradient(145deg,rgba(5,34,43,.91),rgba(1,14,21,.95));box-shadow:inset 0 0 20px rgba(0,207,226,.035)}
-.analytics-card h3{font-size:12px;margin:0 0 7px}
-.analytics-card p{font-size:10px;color:var(--muted);line-height:1.6;margin:0}
-.analytics-card .statline{display:flex;justify-content:space-between;align-items:end;margin-top:16px}
-.analytics-card .statline strong{font-size:27px;font-weight:600}
-.analytics-card .statline span{font-size:10px;color:var(--green)}
-.ring{width:112px;height:70px;margin:14px auto 0;border:7px solid rgba(0,213,232,.12);border-bottom:0;border-radius:100px 100px 0 0;position:relative;overflow:hidden}
-.ring:after{content:"";position:absolute;inset:0;border:7px solid transparent;border-top-color:var(--cyan);border-left-color:#00b7c8;border-radius:100px 100px 0 0;transform:rotate(-12deg)}
-.two-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.bottom-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
-.stat-card{border:1px solid rgba(0,204,226,.32);border-radius:14px;padding:16px;background:linear-gradient(145deg,rgba(5,31,40,.9),rgba(1,13,19,.92));min-height:100px;position:relative;overflow:hidden}
-.stat-card:after{content:"";position:absolute;width:100px;height:100px;border-radius:50%;right:-45px;bottom:-65px;background:rgba(0,212,235,.1);filter:blur(10px)}
-.stat-card .label{font-size:11px;color:#c3d5db}
-.stat-card .value{font-size:27px;margin-top:11px;letter-spacing:-1px}
-.stat-card .hint{font-size:9px;color:var(--muted);margin-top:5px}
-.lower-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:12px;margin-top:13px}
-.lower-card{border:1px solid rgba(0,205,226,.3);border-radius:14px;background:rgba(3,20,28,.85);padding:15px;min-height:120px}
-.lower-card h3{font-size:12px;margin:0 0 11px}
-.agent-list{display:flex;flex-wrap:wrap;gap:7px}
-.agent-pill{font-size:10px;padding:7px 10px;border:1px solid rgba(0,205,226,.25);border-radius:8px;color:#b9e9ed;background:rgba(0,185,205,.06)}
-.activity-list{display:flex;flex-direction:column;gap:8px;max-height:180px;overflow:auto}
-.activity{display:grid;grid-template-columns:7px 1fr auto;gap:9px;align-items:center;font-size:10px;color:#d3e5e9;padding-bottom:7px;border-bottom:1px solid rgba(0,200,220,.1)}
-.activity .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan)}
-.activity .meta{color:var(--muted);font-size:9px}
-.review-row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid rgba(0,200,220,.12);font-size:10px}
-.review-row:last-child{border:0}
-.review-row button{background:rgba(0,210,230,.1);border:1px solid var(--line);color:var(--cyan);border-radius:7px;padding:6px 9px;font-size:9px}
-.statusbar{margin-top:24px;border-top:1px solid rgba(0,210,230,.24);padding:18px 0 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;color:#9bb3bc;font-size:10px}
-.status-left,.status-right{display:flex;align-items:center;gap:17px;flex-wrap:wrap}
-.status-right{margin-left:auto}
-.status-online{color:var(--green)}
-.toast{position:fixed;right:20px;bottom:20px;background:#08232c;border:1px solid var(--line);padding:12px 16px;border-radius:10px;font-size:12px;display:none;z-index:20}
-.empty{font-size:10px;color:var(--muted);padding:10px 0}
-@media(max-width:1050px){
- .hero,.main-grid{grid-template-columns:1fr}
- .hero-side{display:none}.side-column{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
- .side-intro{grid-column:1/-1}.console{min-height:0}
+.brand { display: flex; align-items: center; gap: 13px; min-width: 245px; cursor: pointer; }
+.brand-mark { width: 43px; height: 48px; filter: drop-shadow(0 0 10px #00ddeb); transition: transform .3s var(--ease); }
+.brand:hover .brand-mark { transform: scale(1.05); }
+.brand-name { font-size: 23px; font-weight: 700; letter-spacing: 1.5px; }
+.brand-sub { font-size: 11px; color: #b2c8d0; margin-top: 3px; }
+
+/* NAVIGATION PILL BAR */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px;
+  border: 1px solid rgba(0, 205, 226, .2);
+  border-radius: 15px;
+  background: rgba(4, 28, 37, .82);
+  backdrop-filter: blur(10px);
+  position: relative;
 }
-@media(max-width:700px){
- .shell{padding:12px 12px 0}.topbar{height:auto;flex-wrap:wrap}.brand{min-width:0}.nav{order:3;width:100%;overflow:auto}.nav a{padding:9px 12px;white-space:nowrap}.top-right{display:none}
- .hero{padding:28px 0 18px}.hero h1{font-size:34px}.world-layout{grid-template-columns:1fr 1fr}.globe-wrap{grid-column:1/-1;grid-row:1;height:210px}.mini-stack{grid-row:2}.side-column{grid-template-columns:1fr}.bottom-stats{grid-template-columns:1fr 1fr}.lower-grid{grid-template-columns:1fr}.toolbar-chip:nth-of-type(n+3){display:none}.statusbar{align-items:flex-start;flex-direction:column}.status-right{margin-left:0}
+.nav-btn {
+  font-size: 12px;
+  font-weight: 500;
+  color: #b8cbd1;
+  padding: 10px 17px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: color .25s var(--ease), background .25s var(--ease), border-color .25s var(--ease), transform .2s var(--ease), box-shadow .25s var(--ease);
+}
+.nav-btn:hover {
+  color: var(--cyan);
+  background: rgba(0, 219, 237, .1);
+}
+.nav-btn.active {
+  background: rgba(0, 219, 237, .17);
+  border-color: rgba(0, 229, 245, .32);
+  color: var(--cyan);
+  box-shadow: 0 0 16px rgba(0, 229, 245, .14);
+}
+.nav-btn:active { transform: scale(0.97); }
+.nav-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+/* TOP-RIGHT ACTION BUTTONS (FIXED FROM FAKE DIVS) */
+.top-right { display: flex; gap: 10px; align-items: center; }
+.thumb-btn {
+  width: 54px;
+  height: 48px;
+  border: 1px solid rgba(0, 218, 239, .26);
+  border-radius: 12px;
+  background: linear-gradient(145deg, #07313b, #03131b);
+  display: grid;
+  place-items: center;
+  color: var(--cyan);
+  font-size: 19px;
+  position: relative;
+  transition: transform .22s var(--ease), border-color .22s var(--ease), box-shadow .22s var(--ease), background .22s var(--ease);
+}
+.thumb-btn:hover {
+  border-color: rgba(0, 229, 245, .7);
+  background: linear-gradient(145deg, #0b4452, #05202d);
+  box-shadow: 0 0 18px rgba(0, 229, 245, .22);
+  transform: translateY(-2px);
+}
+.thumb-btn:active { transform: translateY(0) scale(0.95); }
+.thumb-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.thumb-btn.is-busy .thumb-glyph { animation: spinPulse .75s linear infinite; }
+@keyframes spinPulse {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.12); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+.thumb-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+  background: rgba(3, 21, 29, .96);
+  border: 1px solid rgba(0, 218, 239, .35);
+  padding: 6px 10px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .45);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity .2s var(--ease), transform .2s var(--ease);
+  z-index: 40;
+}
+.thumb-btn:hover::after,
+.thumb-btn:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* FOCUSED VIEW HEADER BAR (SHOWN WHEN EXPANDING A SINGLE SECTION) */
+.focus-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 18px 0 16px;
+  padding: 12px 16px;
+  border: 1px solid rgba(0, 218, 239, .28);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(5, 31, 41, .86), rgba(2, 14, 21, .9));
+  animation: viewExpandIn .38s var(--ease) both;
+}
+body:not([data-view="home"]) .focus-bar { display: flex; }
+.focus-bar-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 218, 239, .35);
+  background: rgba(0, 219, 237, .12);
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 600;
+  transition: background .2s var(--ease), transform .2s var(--ease), border-color .2s var(--ease);
+}
+.back-btn:hover {
+  background: rgba(0, 219, 237, .22);
+  border-color: var(--cyan);
+  transform: translateX(-2px);
+}
+.focus-title { font-size: 16px; font-weight: 600; margin: 0; }
+.focus-sub { font-size: 11px; color: var(--muted); margin: 2px 0 0; }
+.focus-hint { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.kbd {
+  font-size: 10px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 218, 239, .28);
+  background: rgba(0, 18, 26, .75);
+  color: #bcebf2;
+}
+
+/* HERO */
+.hero {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr;
+  gap: 28px;
+  align-items: center;
+  padding: 26px 0 22px;
+  transition: opacity .35s var(--ease), transform .35s var(--ease);
+}
+.hero-main { text-align: center; padding: 0 3%; }
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  background: rgba(0, 190, 215, .09);
+  border-radius: 30px;
+  padding: 9px 15px;
+  color: var(--cyan);
+  font-size: 11px;
+  font-weight: 600;
+}
+.hero h1 { font-size: clamp(31px, 4vw, 48px); line-height: 1.08; letter-spacing: -1.8px; margin: 15px 0 10px; font-weight: 600; }
+.hero p { font-size: 13px; line-height: 1.7; color: #b3c8d0; max-width: 590px; margin: 0 auto; }
+.actions { display: flex; justify-content: center; gap: 12px; margin-top: 17px; flex-wrap: wrap; }
+.btn {
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 11px 17px;
+  background: rgba(0, 211, 231, .1);
+  color: #dffcff;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
+  transition: filter .2s var(--ease), transform .2s var(--ease), box-shadow .2s var(--ease);
+}
+.btn.primary { background: linear-gradient(110deg, #6af8ff, #00cddd); color: #00232a; border: 0; box-shadow: 0 0 22px rgba(0, 220, 239, .24); }
+.btn:hover { filter: brightness(1.14); transform: translateY(-1px); }
+.hero-side { text-align: center; padding: 10px; }
+.hero-side h2 { font-size: 19px; font-weight: 600; margin: 12px 0 7px; }
+.hero-side p { font-size: 11px; color: var(--muted); line-height: 1.6; }
+.section-label { font-size: 10px; color: var(--cyan); letter-spacing: 1.3px; text-transform: uppercase; }
+
+/* MAIN 2-COLUMN BALANCED GRID (NO EMPTY VOID ON LEFT) */
+.main-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+  transition: opacity .35s var(--ease), transform .35s var(--ease);
+}
+.left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* SMOOTH VIEW TRANSITION ANIMATION */
+@keyframes viewExpandIn {
+  0% { opacity: 0; transform: translateY(14px) scale(0.985); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.view-block {
+  transition: opacity .32s var(--ease), transform .32s var(--ease);
+}
+.view-block.is-entering {
+  animation: viewExpandIn .42s var(--ease) both;
+}
+
+/* FOCUSED VIEW RULES: EXPAND ONLY THE SELECTED SECTION SMOOTHLY */
+body:not([data-view="home"]) .hero { display: none; }
+
+body[data-view="operations"] .main-grid { grid-template-columns: 1fr; }
+body[data-view="operations"] .side-column,
+body[data-view="operations"] #agents,
+body[data-view="operations"] #policies { display: none; }
+body[data-view="operations"] .console { min-height: 520px; }
+body[data-view="operations"] .world-layout { min-height: 365px; gap: 18px; }
+body[data-view="operations"] .globe-wrap { height: 320px; }
+
+body[data-view="agents"] .main-grid { grid-template-columns: 1fr; }
+body[data-view="agents"] .side-column,
+body[data-view="agents"] #operations-section,
+body[data-view="agents"] #policies { display: none; }
+body[data-view="agents"] .lower-grid { margin-top: 0; gap: 18px; }
+body[data-view="agents"] .lower-card { min-height: 440px; padding: 22px; }
+body[data-view="agents"] .activity-list { max-height: 380px; }
+
+body[data-view="intelligence"] .main-grid { grid-template-columns: 1fr; }
+body[data-view="intelligence"] .left-column,
+body[data-view="intelligence"] #assistant-panel { display: none; }
+body[data-view="intelligence"] .two-cards { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+body[data-view="intelligence"] .analytics-card { padding: 22px; min-height: 220px; }
+
+body[data-view="policies"] .main-grid { grid-template-columns: 1fr; }
+body[data-view="policies"] .side-column,
+body[data-view="policies"] #operations-section,
+body[data-view="policies"] #agents { display: none; }
+body[data-view="policies"] #policies { min-height: 460px; padding: 24px; }
+
+body[data-view="assistant"] .main-grid { grid-template-columns: 1fr; }
+body[data-view="assistant"] .left-column,
+body[data-view="assistant"] #intelligence { display: none; }
+body[data-view="assistant"] .aegis-assistant-panel { padding: 20px; }
+body[data-view="assistant"] .aegis-assistant-panel iframe { height: 640px !important; }
+
+/* OPERATIONS CONSOLE */
+.console {
+  border: 1px solid rgba(0, 222, 241, .62);
+  border-radius: 19px;
+  overflow: hidden;
+  background: linear-gradient(145deg, rgba(5, 31, 41, .94), rgba(1, 12, 19, .96));
+  box-shadow: 0 0 35px rgba(0, 204, 228, .12), inset 0 0 28px rgba(0, 204, 228, .035);
+  min-height: 425px;
+  position: relative;
+  transition: min-height .4s var(--ease);
+}
+.console:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(120deg, transparent 35%, rgba(0, 222, 240, .045), transparent 65%);
+}
+.console-toolbar {
+  height: 53px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 15px;
+  border-bottom: 1px solid rgba(0, 207, 226, .18);
+  background: rgba(0, 8, 13, .4);
+  position: relative;
+  z-index: 2;
+}
+.rail {
+  width: 44px;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+  align-items: center;
+  border-right: 1px solid rgba(0, 205, 226, .17);
+  padding: 15px 0;
+}
+.rail-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(0, 212, 232, .22);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #80cbd4;
+  font-size: 13px;
+  transition: color .2s var(--ease), background .2s var(--ease), border-color .2s var(--ease), transform .18s var(--ease);
+}
+.rail-btn:hover {
+  color: var(--cyan);
+  border-color: rgba(0, 229, 245, .55);
+  background: rgba(0, 222, 239, .12);
+  transform: scale(1.06);
+}
+.rail-btn.selected {
+  color: var(--cyan);
+  background: rgba(0, 222, 239, .15);
+  border-color: rgba(0, 229, 245, .45);
+  box-shadow: 0 0 12px rgba(0, 222, 239, .16);
+}
+.toolbar-chip { font-size: 10px; color: #c1d7dd; border: 1px solid rgba(0, 204, 224, .17); border-radius: 8px; padding: 8px 10px; background: rgba(0, 16, 23, .6); }
+.toolbar-spacer { flex: 1; }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 9px var(--green); display: inline-block; margin-right: 5px; }
+.console-content { display: grid; grid-template-columns: 44px 1fr; min-height: 370px; position: relative; }
+.console-work { padding: 15px 14px 14px; min-width: 0; }
+.console-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.console-heading h2 { font-size: 18px; margin: 0 0 5px; font-weight: 600; }
+.console-heading p { font-size: 10px; color: var(--muted); margin: 0; }
+.console-heading .tag { font-size: 9px; color: var(--green); border: 1px solid rgba(0, 230, 173, .25); padding: 6px 8px; border-radius: 7px; }
+
+.world-layout { display: grid; grid-template-columns: 1fr 1.45fr 1fr; gap: 10px; align-items: center; min-height: 285px; margin-top: 4px; }
+.mini-stack { display: flex; flex-direction: column; gap: 10px; z-index: 2; }
+.mini-card { border: 1px solid rgba(0, 205, 228, .28); background: rgba(0, 17, 24, .83); border-radius: 12px; padding: 11px; min-width: 0; box-shadow: inset 0 0 18px rgba(0, 196, 220, .035); }
+.mini-card h3 { font-size: 10px; font-weight: 600; margin: 0 0 9px; }
+.mini-card .big { font-size: 24px; letter-spacing: -1px; }
+.mini-card small { font-size: 9px; color: var(--muted); }
+.chart { height: 58px; width: 100%; display: block; margin-top: 7px; }
+.spark { height: 37px; width: 100%; display: block; margin-top: 8px; }
+.globe-wrap {
+  height: 270px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-width: 0;
+  border-radius: 14px;
+  background: radial-gradient(circle at 50% 52%, rgba(0, 185, 210, .09), transparent 68%);
+  overflow: hidden;
+}
+.net-legend {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 9px;
+  color: var(--muted);
+  z-index: 3;
+  pointer-events: none;
+}
+.net-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.net-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.net-dot.running { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.net-dot.stopped { background: #7094a3; }
+.net-dot.error { background: var(--red); box-shadow: 0 0 6px var(--red); }
+.net-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+.net-canvas:active { cursor: grabbing; }
+.net-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(3, 20, 29, .95);
+  border: 1px solid rgba(0, 229, 245, .42);
+  border-radius: 9px;
+  padding: 7px 10px;
+  font-size: 10px;
+  color: var(--text);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .5);
+  opacity: 0;
+  transform: translate(-50%, -115%);
+  transition: opacity .15s ease;
+  z-index: 5;
+  white-space: nowrap;
+}
+.net-tooltip.show { opacity: 1; }
+.net-tooltip strong { color: var(--cyan); display: block; font-size: 11px; margin-bottom: 2px; }
+
+/* ANALYTICS & SIDE CARDS */
+.side-intro { text-align: center; padding: 6px 3px 4px; }
+.side-intro h2 { font-size: 18px; margin: 8px 0; }
+.side-intro p { font-size: 10px; color: var(--muted); margin: 0; }
+.analytics-card {
+  border: 1px solid rgba(0, 210, 230, .4);
+  border-radius: 14px;
+  padding: 15px;
+  background: linear-gradient(145deg, rgba(5, 34, 43, .91), rgba(1, 14, 21, .95));
+  box-shadow: inset 0 0 20px rgba(0, 207, 226, .035);
+}
+.analytics-card h3 { font-size: 12px; margin: 0 0 7px; }
+.analytics-card p { font-size: 10px; color: var(--muted); line-height: 1.6; margin: 0; }
+.analytics-card .statline { display: flex; justify-content: space-between; align-items: end; margin-top: 16px; }
+.analytics-card .statline strong { font-size: 27px; font-weight: 600; }
+.analytics-card .statline span { font-size: 10px; color: var(--green); }
+.ring { width: 112px; height: 70px; margin: 14px auto 0; border: 7px solid rgba(0, 213, 232, .12); border-bottom: 0; border-radius: 100px 100px 0 0; position: relative; overflow: hidden; }
+.ring:after { content: ""; position: absolute; inset: 0; border: 7px solid transparent; border-top-color: var(--cyan); border-left-color: #00b7c8; border-radius: 100px 100px 0 0; transform: rotate(-12deg); }
+.two-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.aegis-assistant-panel { display: flex; flex-direction: column; flex: 1; }
+.aegis-assistant-panel iframe {
+  display: block;
+  width: 100%;
+  height: 460px;
+  margin-top: 14px;
+  border: 1px solid rgba(0, 218, 239, .25);
+  border-radius: 12px;
+  background: #020b10;
+  transition: height .35s var(--ease);
+}
+
+/* BOTTOM STATS & LOWER CARDS (NOW INSIDE LEFT COLUMN FOR ZERO EMPTY SPACE) */
+.bottom-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
+.stat-card {
+  border: 1px solid rgba(0, 204, 226, .32);
+  border-radius: 14px;
+  padding: 16px;
+  background: linear-gradient(145deg, rgba(5, 31, 40, .9), rgba(1, 13, 19, .92));
+  min-height: 100px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .25s var(--ease), transform .25s var(--ease);
+}
+.stat-card:hover { border-color: rgba(0, 229, 245, .55); transform: translateY(-2px); }
+.stat-card:after { content: ""; position: absolute; width: 100px; height: 100px; border-radius: 50%; right: -45px; bottom: -65px; background: rgba(0, 212, 235, .1); filter: blur(10px); }
+.stat-card .label { font-size: 11px; color: #c3d5db; }
+.stat-card .value { font-size: 27px; margin-top: 11px; letter-spacing: -1px; }
+.stat-card .hint { font-size: 9px; color: var(--muted); margin-top: 5px; }
+
+.lower-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 14px; }
+.lower-card {
+  border: 1px solid rgba(0, 205, 226, .3);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(4, 25, 34, .88), rgba(2, 13, 20, .92));
+  padding: 16px;
+  min-height: 185px;
+  display: flex;
+  flex-direction: column;
+}
+.lower-card h3 { font-size: 13px; margin: 0 0 11px; font-weight: 600; }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+.card-head h3 { margin: 0; }
+.expand-chip {
+  font-size: 10px;
+  color: var(--cyan);
+  border: 1px solid rgba(0, 218, 239, .28);
+  background: rgba(0, 219, 237, .08);
+  border-radius: 7px;
+  padding: 4px 9px;
+  transition: background .2s var(--ease), border-color .2s var(--ease);
+}
+.expand-chip:hover { background: rgba(0, 219, 237, .18); border-color: var(--cyan); }
+body:not([data-view="home"]) .expand-chip { display: none; }
+
+#policies { flex: 1; min-height: 175px; }
+#review-list { max-height: 220px; overflow-y: auto; padding-right: 4px; }
+body[data-view="policies"] #review-list { max-height: 540px; }
+.agent-list { display: flex; flex-wrap: wrap; gap: 7px; }
+.agent-pill { font-size: 10px; padding: 7px 10px; border: 1px solid rgba(0, 205, 226, .25); border-radius: 8px; color: #b9e9ed; background: rgba(0, 185, 205, .06); }
+.activity-list { display: flex; flex-direction: column; gap: 8px; max-height: 210px; overflow: auto; flex: 1; }
+.activity { display: grid; grid-template-columns: 7px 1fr auto; gap: 9px; align-items: center; font-size: 10px; color: #d3e5e9; padding-bottom: 7px; border-bottom: 1px solid rgba(0, 200, 220, .1); }
+.activity .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); }
+.activity .meta { color: var(--muted); font-size: 9px; }
+.review-row { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(0, 200, 220, .12); font-size: 11px; }
+.review-row:last-child { border: 0; }
+.review-row button { background: rgba(0, 210, 230, .1); border: 1px solid var(--line); color: var(--cyan); border-radius: 7px; padding: 6px 10px; font-size: 10px; transition: background .2s var(--ease); }
+.review-row button:hover { background: rgba(0, 210, 230, .24); }
+
+/* FOOTER STATUSBAR */
+.statusbar { margin-top: 24px; border-top: 1px solid rgba(0, 210, 230, .24); padding: 18px 0 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; color: #9bb3bc; font-size: 10px; }
+.status-left, .status-right { display: flex; align-items: center; gap: 17px; flex-wrap: wrap; }
+.status-right { margin-left: auto; }
+.status-online { color: var(--green); }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  background: rgba(6, 33, 43, .96);
+  border: 1px solid rgba(0, 229, 245, .45);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .5);
+  padding: 12px 16px;
+  border-radius: 11px;
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity .25s var(--ease), transform .25s var(--ease);
+  z-index: 60;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* QUICK COMMAND MODAL (OPENED BY ⌘ BUTTON OR CTRL+K) */
+.cmd-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(1, 9, 14, .72);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s var(--ease);
+  z-index: 80;
+}
+.cmd-backdrop.open { opacity: 1; pointer-events: auto; }
+.cmd-modal {
+  width: min(480px, 92vw);
+  border: 1px solid rgba(0, 222, 241, .45);
+  border-radius: 16px;
+  background: linear-gradient(155deg, rgba(6, 33, 44, .98), rgba(2, 14, 21, .98));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .65), 0 0 30px rgba(0, 218, 239, .14);
+  overflow: hidden;
+  transform: translateY(12px) scale(0.97);
+  transition: transform .25s var(--ease);
+}
+.cmd-backdrop.open .cmd-modal { transform: translateY(0) scale(1); }
+.cmd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(0, 207, 226, .2);
+}
+.cmd-header strong { font-size: 13px; color: var(--cyan); letter-spacing: .5px; }
+.cmd-close { font-size: 16px; color: var(--muted); padding: 4px 8px; border-radius: 7px; }
+.cmd-close:hover { color: var(--text); background: rgba(255, 255, 255, .08); }
+.cmd-list { padding: 10px; display: flex; flex-direction: column; gap: 4px; }
+.cmd-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 13px;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #d6edf2;
+  text-align: left;
+  transition: background .18s var(--ease), color .18s var(--ease);
+}
+.cmd-item:hover { background: rgba(0, 219, 237, .14); color: var(--cyan); }
+.cmd-item small { color: var(--muted); font-size: 10px; }
+
+.empty { font-size: 10px; color: var(--muted); padding: 10px 0; }
+
+@media (max-width: 1080px) {
+  .hero, .main-grid { grid-template-columns: 1fr; }
+  .hero-side { display: none; }
+  .console { min-height: 0; }
+}
+@media (max-width: 700px) {
+  .shell { padding: 12px 12px 0; }
+  .topbar { height: auto; flex-wrap: wrap; }
+  .brand { min-width: 0; }
+  .nav { order: 3; width: 100%; overflow: auto; }
+  .nav-btn { padding: 9px 12px; white-space: nowrap; }
+  .top-right { gap: 6px; }
+  .thumb-btn { width: 42px; height: 40px; font-size: 16px; }
+  .hero { padding: 24px 0 18px; }
+  .hero h1 { font-size: 32px; }
+  .world-layout { grid-template-columns: 1fr 1fr; }
+  .globe-wrap { grid-column: 1 / -1; grid-row: 1; height: 210px; }
+  .mini-stack { grid-row: 2; }
+  .two-cards, body[data-view="intelligence"] .two-cards { grid-template-columns: 1fr; }
+  .bottom-stats { grid-template-columns: 1fr 1fr; }
+  .lower-grid { grid-template-columns: 1fr; }
+  .toolbar-chip:nth-of-type(n+3) { display: none; }
+  .statusbar { align-items: flex-start; flex-direction: column; }
+  .status-right { margin-left: 0; }
 }
 </style>
 </head>
-<body>
+<body data-view="home">
 <div class="shell">
   <header class="topbar">
-    <a class="brand" href="/">
+    <a class="brand" href="#home" data-switch="home" title="Return to Home overview">
       <svg class="brand-mark" viewBox="0 0 48 54" fill="none" aria-hidden="true">
         <path d="M24 3 43 10v14c0 12-8 21-19 27C13 45 5 36 5 24V10L24 3Z" stroke="#00e5f5" stroke-width="3"/>
         <path d="M24 10 36 14v10c0 8-5 14-12 19-7-5-12-11-12-19V14l12-4Z" stroke="#00aebe" stroke-width="1.5"/>
@@ -152,22 +657,51 @@ button{cursor:pointer}
       </svg>
       <div><div class="brand-name">AEGIS</div><div class="brand-sub">AI Accountability Layer</div></div>
     </a>
-    <nav class="nav">
-      <a class="active" href="#home">Home</a><a href="#operations">Operations</a>
-      <a href="#agents">Agents</a><a href="#intelligence">Intelligence</a>
-      <a href="#policies">Policies</a><a href="/dashboard/index.html">Assistant</a>
+
+    <nav class="nav" aria-label="Dashboard views">
+      <button type="button" class="nav-btn active" data-view-target="home">Home</button>
+      <button type="button" class="nav-btn" data-view-target="operations">Operations</button>
+      <button type="button" class="nav-btn" data-view-target="agents">Agents</button>
+      <button type="button" class="nav-btn" data-view-target="intelligence">Intelligence</button>
+      <button type="button" class="nav-btn" data-view-target="policies">Policies</button>
+      <button type="button" class="nav-btn" data-view-target="assistant">Assistant</button>
     </nav>
-    <div class="top-right"><div class="thumb">◉</div><div class="thumb">⌘</div><div class="thumb">⬡</div></div>
+
+    <div class="top-right">
+      <button type="button" class="thumb-btn" id="btn-sync" data-tooltip="Sync Live Telemetry" aria-label="Sync Live Telemetry">
+        <span class="thumb-glyph">◉</span>
+      </button>
+      <button type="button" class="thumb-btn" id="btn-cmd" data-tooltip="Quick Commands (Ctrl+K)" aria-label="Open Quick Commands">
+        <span class="thumb-glyph">⌘</span>
+      </button>
+      <button type="button" class="thumb-btn" id="btn-verify" data-tooltip="Verify Audit Integrity" aria-label="Verify Audit Integrity">
+        <span class="thumb-glyph">⬡</span>
+      </button>
+    </div>
   </header>
 
-  <section class="hero" id="home">
+  <!-- FOCUSED VIEW HEADER BAR (VISIBLE WHEN EXPANDING A SINGLE MODULE) -->
+  <div class="focus-bar" id="focus-bar">
+    <div class="focus-bar-left">
+      <button type="button" class="back-btn" data-switch="home">← Back to Home</button>
+      <div>
+        <h2 class="focus-title" id="focus-title">Operations Center</h2>
+        <p class="focus-sub" id="focus-sub">Focused full-width workspace</p>
+      </div>
+    </div>
+    <div class="focus-hint">
+      <span>Press</span><span class="kbd">ESC</span><span>for overview</span>
+    </div>
+  </div>
+
+  <section class="hero view-block" id="home">
     <div class="hero-main">
       <div class="eyebrow">⬡ &nbsp; REAL-TIME AI ACCOUNTABILITY PLATFORM</div>
       <h1>Detect, Monitor and<br>Govern AI Agent Actions</h1>
       <p>One accountability layer between autonomous agents and the tools they use. Evaluate actions, enforce safeguards, require human review and preserve an auditable record.</p>
       <div class="actions">
-        <a class="btn primary" href="#operations">View Operations <span>→</span></a>
-        <a class="btn" href="/dashboard/index.html">◯ &nbsp; Chat with AEGIS</a>
+        <button type="button" class="btn primary" data-switch="operations">View Operations <span>→</span></button>
+        <button type="button" class="btn" data-switch="assistant">◯ &nbsp; Chat with AEGIS</button>
       </div>
     </div>
     <div class="hero-side">
@@ -177,308 +711,736 @@ button{cursor:pointer}
     </div>
   </section>
 
-  <main class="main-grid" id="operations">
-    <section>
-      <div class="console">
-        <div class="console-toolbar">
-          <span class="toolbar-chip">AEGIS / CONTROL</span>
-          <span class="toolbar-chip">Scope: Audit Records</span>
-          <span class="toolbar-chip">Policy: Active</span>
-          <span class="toolbar-spacer"></span>
-          <span class="toolbar-chip"><i class="live-dot"></i><span id="connection">Connecting</span></span>
-          <span class="toolbar-chip" id="clock">--:--:--</span>
-        </div>
-        <div class="console-content">
-          <aside class="rail"><span class="selected">▦</span><span>⬡</span><span>⌘</span><span>◈</span><span>♧</span><span>⌕</span></aside>
-          <div class="console-work">
-            <div class="console-heading">
-              <div><h2>AEGIS Operations Center</h2><p>Action Governance · Agent Oversight · Audit Integrity</p></div>
-              <span class="tag">● ENGINE MONITORING</span>
-            </div>
-            <div class="world-layout">
-              <div class="mini-stack">
-                <div class="mini-card">
-                  <h3>Decision Distribution</h3>
-                  <div class="big" id="decision-total">—</div><small>Recorded evaluations</small>
-                  <svg class="chart" id="decision-chart" viewBox="0 0 180 58" preserveAspectRatio="none"></svg>
-                </div>
-                <div class="mini-card">
-                  <h3>Recent Audit Activity</h3>
-                  <div class="big" id="audit-count">—</div><small>Audit entries returned</small>
-                  <svg class="spark" id="activity-chart" viewBox="0 0 180 37" preserveAspectRatio="none"></svg>
-                </div>
+  <main class="main-grid" id="main-workspace">
+    <!-- LEFT COLUMN: BALANCED HEIGHT WITH RIGHT COLUMN (ZERO EMPTY VOID) -->
+    <div class="left-column">
+      <section class="view-block" id="operations-section">
+        <div class="console">
+          <div class="console-toolbar">
+            <span class="toolbar-chip">AEGIS / CONTROL</span>
+            <span class="toolbar-chip">Scope: Audit Records</span>
+            <span class="toolbar-chip">Policy: Active</span>
+            <span class="toolbar-spacer"></span>
+            <span class="toolbar-chip"><i class="live-dot"></i><span id="connection">Connecting</span></span>
+            <span class="toolbar-chip" id="clock">--:--:--</span>
+          </div>
+          <div class="console-content">
+            <aside class="rail" aria-label="Quick module shortcuts">
+              <button type="button" class="rail-btn selected" data-switch="operations" title="Expand Operations">▦</button>
+              <button type="button" class="rail-btn" data-switch="agents" title="Expand Agents">⬡</button>
+              <button type="button" class="rail-btn" data-switch="intelligence" title="Expand Intelligence">◈</button>
+              <button type="button" class="rail-btn" data-switch="policies" title="Expand Policies & Reviews">♧</button>
+              <button type="button" class="rail-btn" data-switch="assistant" title="Expand AI Assistant">◯</button>
+              <button type="button" class="rail-btn" id="rail-cmd" title="Quick Commands (Ctrl+K)">⌘</button>
+            </aside>
+            <div class="console-work">
+              <div class="console-heading">
+                <div><h2>AEGIS Operations Center</h2><p>Action Governance · Agent Oversight · Audit Integrity</p></div>
+                <span class="tag">● ENGINE MONITORING</span>
               </div>
-
-              <div class="globe-wrap">
-                <svg class="globe" viewBox="0 0 340 300" role="img" aria-label="Abstract visualization of AEGIS action governance">
-                  <defs>
-                    <radialGradient id="sphere"><stop stop-color="#087f96" stop-opacity=".36"/><stop offset=".72" stop-color="#003541" stop-opacity=".16"/><stop offset="1" stop-color="#00131c" stop-opacity=".05"/></radialGradient>
-                    <linearGradient id="edge"><stop stop-color="#00eaff" stop-opacity=".1"/><stop offset=".5" stop-color="#00eaff"/><stop offset="1" stop-color="#00eaff" stop-opacity=".1"/></linearGradient>
-                  </defs>
-                  <circle cx="170" cy="139" r="112" fill="url(#sphere)" stroke="#00dff5" stroke-opacity=".6"/>
-                  <ellipse cx="170" cy="139" rx="112" ry="43" class="globe-grid"/>
-                  <ellipse cx="170" cy="139" rx="112" ry="78" class="globe-grid"/>
-                  <ellipse cx="170" cy="139" rx="48" ry="112" class="globe-grid"/>
-                  <ellipse cx="170" cy="139" rx="83" ry="112" class="globe-grid"/>
-                  <path class="globe-land" d="M113 66 137 54 154 63 150 80 165 91 157 110 140 118 135 140 120 151 111 133 98 123 91 101 101 83Z"/>
-                  <path class="globe-land" d="m166 151 20 7 13 22-8 23-12 25-12-12-5-28-12-18Z"/>
-                  <path class="globe-land" d="m207 73 20-9 22 10 12 19-12 12-19-4-11 17-17-10-8-18Z"/>
-                  <path class="globe-land" d="m222 145 20-9 19 14-8 21-19 8-17-14Z"/>
-                  <g class="orbit">
-                    <path d="M35 151 88 94 137 118 170 139 222 87 293 119"/>
-                    <path d="M57 207 111 165 170 139 225 185 282 159"/>
-                    <path d="M88 94 111 165 137 118 225 185 222 87"/>
-                    <path d="M57 207 137 118 222 87 282 159"/>
-                    <path d="M35 151 111 165 225 185 293 119"/>
-                  </g>
-                  <g class="node">
-                    <circle cx="35" cy="151" r="3"/><circle cx="88" cy="94" r="3"/><circle cx="137" cy="118" r="4"/>
-                    <circle cx="170" cy="139" r="5"/><circle cx="222" cy="87" r="3"/><circle cx="293" cy="119" r="3"/>
-                    <circle cx="57" cy="207" r="3"/><circle cx="111" cy="165" r="3"/><circle cx="225" cy="185" r="4"/>
-                    <circle cx="282" cy="159" r="3"/>
-                  </g>
-                  <circle cx="170" cy="139" r="10" fill="#00e5f5" opacity=".2"/>
-                  <circle cx="170" cy="139" r="4" fill="#eaffff"/>
-                  <ellipse cx="170" cy="266" rx="130" ry="16" fill="none" stroke="url(#edge)" stroke-width="2"/>
-                  <ellipse cx="170" cy="266" rx="101" ry="9" fill="none" stroke="#00dff5" stroke-opacity=".5"/>
-                  <path d="M40 266 Q170 245 300 266" stroke="#00e5f5" fill="none" opacity=".5"/>
-                </svg>
-              </div>
-
-              <div class="mini-stack">
-                <div class="mini-card">
-                  <h3>Observed Agents</h3>
-                  <div class="big" id="agent-count">—</div><small>Distinct agents in audit history</small>
-                  <svg class="spark" id="agent-chart" viewBox="0 0 180 37" preserveAspectRatio="none"></svg>
+              <div class="world-layout">
+                <div class="mini-stack">
+                  <div class="mini-card">
+                    <h3>Decision Distribution</h3>
+                    <div class="big" id="decision-total">—</div><small>Recorded evaluations</small>
+                    <svg class="chart" id="decision-chart" viewBox="0 0 180 58" preserveAspectRatio="none"></svg>
+                  </div>
+                  <div class="mini-card">
+                    <h3>Recent Audit Activity</h3>
+                    <div class="big" id="audit-count">—</div><small>Audit entries returned</small>
+                    <svg class="spark" id="activity-chart" viewBox="0 0 180 37" preserveAspectRatio="none"></svg>
+                  </div>
                 </div>
-                <div class="mini-card">
-                  <h3>Human Review Queue</h3>
-                  <div class="big" id="pending-count">—</div><small>Actions awaiting a decision</small>
-                  <div style="margin-top:10px;color:var(--amber);font-size:10px" id="review-note">Checking pending approvals…</div>
+
+                <div class="globe-wrap" id="agent-net-wrap">
+                  <div class="net-legend">
+                    <span><i class="net-dot running"></i> Running</span>
+                    <span><i class="net-dot stopped"></i> Stopped</span>
+                    <span><i class="net-dot error"></i> Disconnected / error</span>
+                  </div>
+                  <canvas class="net-canvas" id="agent-net-canvas" aria-label="Interactive AEGIS agent network topology"></canvas>
+                  <div class="net-tooltip" id="agent-net-tooltip"></div>                </div>
+
+                <div class="mini-stack">
+                  <div class="mini-card">
+                    <h3>Observed Agents</h3>
+                    <div class="big" id="agent-count">—</div><small>Distinct agents in audit history</small>
+                    <svg class="spark" id="agent-chart" viewBox="0 0 180 37" preserveAspectRatio="none"></svg>
+                  </div>
+                  <div class="mini-card">
+                    <h3>Human Review Queue</h3>
+                    <div class="big" id="pending-count">—</div><small>Actions awaiting a decision</small>
+                    <div style="margin-top:10px;color:var(--amber);font-size:10px" id="review-note">Checking pending approvals…</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        <div class="bottom-stats">
+          <div class="stat-card"><div class="label">Total Evaluations</div><div class="value" id="metric-total">—</div><div class="hint">Recorded by AEGIS</div></div>
+          <div class="stat-card"><div class="label">Blocked Actions</div><div class="value" id="metric-blocked">—</div><div class="hint">Denied by policy</div></div>
+          <div class="stat-card"><div class="label">Review Required</div><div class="value" id="metric-review">—</div><div class="hint">Human decision required</div></div>
+          <div class="stat-card"><div class="label">Audit Integrity</div><div class="value" id="metric-integrity">—</div><div class="hint" id="integrity-hint">Verifying audit chain</div></div>
+        </div>
+      </section>
+
+      <section class="lower-grid view-block" id="agents">
+        <div class="lower-card">
+          <div class="card-head">
+            <h3>Observed Agent Registry</h3>
+            <button type="button" class="expand-chip" data-switch="agents">Expand ↗</button>
+          </div>
+          <div class="agent-list" id="agent-list"><span class="empty">Loading agent names from audit history…</span></div>
+          <p style="font-size:9px;color:var(--muted);margin:auto 0 0;padding-top:12px">This list reflects agents present in AEGIS audit records; it does not imply live network connectivity.</p>
+        </div>
+        <div class="lower-card">
+          <div class="card-head">
+            <h3>Recent Governance Activity</h3>
+            <span class="section-label">AUDIT FEED</span>
+          </div>
+          <div class="activity-list" id="activity-list"><div class="empty">Retrieving audit records…</div></div>
+        </div>
+      </section>
+
+      <section class="lower-card view-block" id="policies">
+        <div class="card-head">
+          <h3>Human Review Queue</h3>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="section-label">PENDING APPROVALS</span>
+            <button type="button" class="expand-chip" data-switch="policies">Expand ↗</button>
+          </div>
+        </div>
+        <div id="review-list" style="margin-top:4px;flex:1"><div class="empty">Loading pending approvals…</div></div>
+        <p style="font-size:9px;color:var(--muted);margin:10px 0 0">Review decisions are submitted to the AEGIS approval API. This dashboard does not execute approved actions.</p>
+      </section>
+    </div>
+
+    <!-- RIGHT COLUMN: INTELLIGENCE + ASSISTANT -->
+    <aside class="side-column">
+      <div class="view-block" id="intelligence">
+        <div class="side-intro">
+          <div class="eyebrow">⌁ &nbsp; LIVE ANALYTICS</div>
+          <h2>Decision Intelligence</h2>
+          <p>Grounded in recorded AEGIS evaluations and audit evidence.</p>
+        </div>
+        <div class="two-cards" style="margin-top:10px">
+          <div class="analytics-card">
+            <h3>Blocked Actions</h3><p>Actions denied by the governance engine.</p>
+            <div class="ring"></div>
+            <div class="statline"><strong id="blocked-percent">—</strong><span id="blocked-total">— blocked</span></div>
+          </div>
+          <div class="analytics-card">
+            <h3>Decision Breakdown</h3><p>Distribution of recorded verdicts.</p>
+            <svg id="verdict-bars" viewBox="0 0 210 105" style="width:100%;height:105px;margin-top:12px"></svg>
+            <div class="statline"><strong id="verdict-kinds">—</strong><span>verdict types</span></div>
+          </div>
+          <div class="analytics-card">
+            <h3>Agent Visibility</h3><p>Agents identified from audit records.</p>
+            <div class="statline"><strong id="agents-side">—</strong><span>observed</span></div>
+            <div class="agent-list" id="agent-pills" style="margin-top:13px"></div>
+          </div>
+          <div class="analytics-card">
+            <h3>Risk Distribution</h3><p>Risk classifications in recorded actions.</p>
+            <div id="risk-bars" style="margin-top:15px"></div>
+          </div>
+        </div>
       </div>
 
-      <div class="bottom-stats">
-        <div class="stat-card"><div class="label">Total Evaluations</div><div class="value" id="metric-total">—</div><div class="hint">Recorded by AEGIS</div></div>
-        <div class="stat-card"><div class="label">Blocked Actions</div><div class="value" id="metric-blocked">—</div><div class="hint">Denied by policy</div></div>
-        <div class="stat-card"><div class="label">Review Required</div><div class="value" id="metric-review">—</div><div class="hint">Human decision required</div></div>
-        <div class="stat-card"><div class="label">Audit Integrity</div><div class="value" id="metric-integrity">—</div><div class="hint" id="integrity-hint">Verifying audit chain</div></div>
-      </div>
-    </section>
-
-    <aside class="side-column" id="intelligence">
-      <div class="side-intro">
-        <div class="eyebrow">⌁ &nbsp; LIVE ANALYTICS</div>
-        <h2>Decision Intelligence</h2>
-        <p>Grounded in recorded AEGIS evaluations and audit evidence.</p>
-      </div>
-      <div class="two-cards">
-        <div class="analytics-card">
-          <h3>Blocked Actions</h3><p>Actions denied by the governance engine.</p>
-          <div class="ring"></div>
-          <div class="statline"><strong id="blocked-percent">—</strong><span id="blocked-total">— blocked</span></div>
-        </div>
-        <div class="analytics-card">
-          <h3>Decision Breakdown</h3><p>Distribution of recorded verdicts.</p>
-          <svg id="verdict-bars" viewBox="0 0 210 105" style="width:100%;height:105px;margin-top:12px"></svg>
-          <div class="statline"><strong id="verdict-kinds">—</strong><span>verdict types</span></div>
-        </div>
-        <div class="analytics-card">
-          <h3>Agent Visibility</h3><p>Agents identified from audit records.</p>
-          <div class="statline"><strong id="agents-side">—</strong><span>observed</span></div>
-          <div class="agent-list" id="agent-pills" style="margin-top:13px"></div>
-        </div>
-        <div class="analytics-card">
-          <h3>Risk Distribution</h3><p>Risk classifications in recorded actions.</p>
-          <div id="risk-bars" style="margin-top:15px"></div>
-        </div>
-      </div>
-      <div class="analytics-card aegis-assistant-panel">
+      <div class="analytics-card aegis-assistant-panel view-block" id="assistant-panel">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
           <div>
             <h3>AEGIS AI Accountability Analyst</h3>
             <p>Ask about governance, policy decisions, audit records and pending reviews.</p>
           </div>
-          <span style="font-size:10px;letter-spacing:1.2px;color:var(--green)">● ASSISTANT ONLINE</span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:10px;letter-spacing:1.2px;color:var(--green)">● ASSISTANT ONLINE</span>
+            <a class="expand-chip" href="/dashboard/index.html" target="_blank" rel="noopener" style="display:inline-flex">Full Tab ↗</a>
+          </div>
         </div>
         <iframe
           src="/dashboard/index.html?embed=assistant"
           title="AEGIS AI Assistant"
           loading="eager"
-          style="display:block;width:100%;height:460px;margin-top:14px;border:1px solid rgba(0,218,239,.25);border-radius:12px;background:#020b10"
         ></iframe>
       </div>
     </aside>
   </main>
-
-  <section class="lower-grid" id="agents">
-    <div class="lower-card">
-      <h3>Observed Agent Registry</h3>
-      <div class="agent-list" id="agent-list"><span class="empty">Loading agent names from audit history…</span></div>
-      <p style="font-size:9px;color:var(--muted);margin:12px 0 0">This list reflects agents present in AEGIS audit records; it does not imply live network connectivity.</p>
-    </div>
-    <div class="lower-card">
-      <h3>Recent Governance Activity</h3>
-      <div class="activity-list" id="activity-list"><div class="empty">Retrieving audit records…</div></div>
-    </div>
-  </section>
-
-  <section class="lower-card" id="policies" style="margin-top:12px">
-    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
-      <h3 style="margin:0">Human Review Queue</h3>
-      <span class="section-label">PENDING APPROVALS</span>
-    </div>
-    <div id="review-list" style="margin-top:8px"><div class="empty">Loading pending approvals…</div></div>
-    <p style="font-size:9px;color:var(--muted);margin:10px 0 0">Review decisions are submitted to the AEGIS approval API. This dashboard does not execute approved actions.</p>
-  </section>
 
   <footer class="statusbar">
     <div class="status-left"><span>AEGIS · AI Accountability Layer</span><span>Governance</span><span>Human Oversight</span><span>Audit Trail</span></div>
     <div class="status-right"><span class="status-online"><i class="live-dot"></i><span id="footer-status">Connecting to engine</span></span><span id="last-updated">Last updated: —</span><span style="color:var(--cyan);font-size:19px">⌁</span></div>
   </footer>
 </div>
+
+<!-- QUICK COMMAND PALETTE MODAL -->
+<div class="cmd-backdrop" id="cmd-backdrop" role="dialog" aria-modal="true" aria-labelledby="cmd-title">
+  <div class="cmd-modal">
+    <div class="cmd-header">
+      <strong id="cmd-title">⌘ AEGIS QUICK COMMANDS</strong>
+      <button type="button" class="cmd-close" id="cmd-close" aria-label="Close command palette">✕</button>
+    </div>
+    <div class="cmd-list">
+      <button type="button" class="cmd-item" data-cmd-view="home"><span>Home Overview</span><small>Full balanced dashboard</small></button>
+      <button type="button" class="cmd-item" data-cmd-view="operations"><span>Expand Operations Center</span><small>Focused telemetry & KPIs</small></button>
+      <button type="button" class="cmd-item" data-cmd-view="agents"><span>Expand Agents & Activity</span><small>Registry & live audit feed</small></button>
+      <button type="button" class="cmd-item" data-cmd-view="intelligence"><span>Expand Decision Intelligence</span><small>Verdict & risk analytics</small></button>
+      <button type="button" class="cmd-item" data-cmd-view="policies"><span>Expand Policies & Review Queue</span><small>Pending human approvals</small></button>
+      <button type="button" class="cmd-item" data-cmd-view="assistant"><span>Expand AI Accountability Analyst</span><small>Full-width interactive chat</small></button>
+      <button type="button" class="cmd-item" data-cmd-action="sync"><span>◉ Sync Live Telemetry</span><small>Refresh stats, audit & queue</small></button>
+      <button type="button" class="cmd-item" data-cmd-action="verify"><span>⬡ Verify Audit Chain Integrity</span><small>Run cryptographic log check</small></button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 const $ = id => document.getElementById(id);
 const number = n => Number(n || 0).toLocaleString();
-const safe = v => String(v ?? "—").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const safe = v => String(v ?? "—").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const verdictColor = v => ({ALLOW:"#00e6ad",BLOCK:"#ff5476",REVIEW:"#ffbd55",CORRECT:"#36cfff"}[String(v||"").toUpperCase()] || "#00d9ed");
 
-function toast(message){
-  const el=$("toast");el.textContent=message;el.style.display="block";
-  setTimeout(()=>el.style.display="none",3000);
+const VIEW_META = {
+  home:         { title: "AEGIS Overview",               sub: "Complete AI accountability workspace" },
+  operations:   { title: "Operations Center",            sub: "Real-time action governance, telemetry & evaluation metrics" },
+  agents:       { title: "Agents & Governance Activity", sub: "Observed agent registry and recent audit stream" },
+  intelligence: { title: "Decision Intelligence",        sub: "Blocked action ratios, verdict breakdown and risk distribution" },
+  policies:     { title: "Policies & Review Queue",      sub: "Human-in-the-loop pending approvals and policy enforcement" },
+  assistant:    { title: "AEGIS AI Accountability Analyst", sub: "Interactive governance, policy and audit assistant" }
+};
+
+let toastTimer = null;
+function toast(message) {
+  const el = $("toast");
+  el.textContent = message;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
 }
-function setText(id,value){$(id).textContent=value;}
-function makeBars(svgId, values, color="#00dff5"){
-  const svg=$(svgId);if(!svg)return;
-  const max=Math.max(1,...values);
-  svg.innerHTML=values.map((v,i)=>{
-    const h=Math.max(2,(v/max)*48),x=4+i*7.1;
-    return `<rect x="${x}" y="${55-h}" width="4.5" height="${h}" rx="1" fill="${color}" opacity="${.45+(v/max)*.55}"/>`;
-  }).join("");
+
+function setText(id, value) {
+  const el = $(id);
+  if (el) el.textContent = value;
 }
-function makeSpark(svgId,values){
-  const svg=$(svgId);if(!svg)return;
-  const max=Math.max(1,...values),min=Math.min(0,...values);
-  const pts=values.map((v,i)=>`${i* (180/Math.max(1,values.length-1))},${32-(v-min)/(max-min||1)*27}`).join(" ");
-  svg.innerHTML=`<polyline points="${pts}" fill="none" stroke="#00e5f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
-}
-function renderVerdicts(verdicts){
-  const entries=Object.entries(verdicts||{});
-  const total=entries.reduce((s,[,v])=>s+Number(v||0),0);
-  $("verdict-bars").innerHTML=entries.length?entries.map(([k,v],i)=>{
-    const y=7+i*24,w=Number(v)/Math.max(1,total)*125;
-    return `<text x="0" y="${y+10}" fill="#a9c4cc" font-size="9">${safe(k)}</text><rect x="68" y="${y}" width="${Math.max(2,w)}" height="13" rx="3" fill="${verdictColor(k)}"/><text x="202" y="${y+10}" fill="#eafcff" text-anchor="end" font-size="9">${number(v)}</text>`;
-  }).join(""):`<text x="5" y="25" fill="#91aab4" font-size="10">No verdict data yet</text>`;
-  setText("verdict-kinds",entries.length);
-}
-function renderRisk(risks){
-  const entries=Object.entries(risks||{});
-  const colors=["#00dff5","#00e6ad","#ffbd55","#ff5476"];
-  $("risk-bars").innerHTML=entries.length?entries.map(([k,v],i)=>{
-    const pct=Number(v)/Math.max(1,entries.reduce((s,[,n])=>s+Number(n||0),0))*100;
-    return `<div style="margin:9px 0"><div style="display:flex;justify-content:space-between;font-size:9px;color:#b8d0d7;margin-bottom:5px"><span>${safe(k)}</span><span>${number(v)}</span></div><div style="height:5px;background:#102a33;border-radius:8px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${colors[i%colors.length]}"></div></div></div>`;
-  }).join(""):`<div class="empty">No risk data recorded</div>`;
-}
-function renderAgents(agents){
-  const names=Array.isArray(agents)?agents:Object.keys(agents||{});
-  setText("agent-count",names.length);setText("agents-side",names.length);
-  const html=names.length?names.map(n=>`<span class="agent-pill">${safe(n)}</span>`).join(""):`<span class="empty">No agent names recorded yet</span>`;
-  $("agent-list").innerHTML=html;$("agent-pills").innerHTML=html;
-  makeSpark("agent-chart",names.map((_,i)=>i+1));
-}
-function renderActivity(entries){
-  const list=$("activity-list");
-  if(!Array.isArray(entries)||!entries.length){list.innerHTML='<div class="empty">No audit activity recorded yet.</div>';return;}
-  list.innerHTML=entries.slice(0,8).map(e=>{
-    const verdict=String(e.verdict||"UNKNOWN").toUpperCase();
-    const when=e.ts?new Date(e.ts).toLocaleTimeString():`#${e.seq??"—"}`;
-    return `<div class="activity"><span class="dot" style="background:${verdictColor(verdict)}"></span><span><strong>${safe(e.agent||"Unknown agent")}</strong> · ${safe(e.kind||"action")} <span class="meta">/ ${safe(e.rule||"engine")}</span></span><span style="color:${verdictColor(verdict)}">${safe(verdict)}</span></div>`;
-  }).join("");
-  setText("audit-count",number(entries.length));
-  makeSpark("activity-chart",entries.slice(0,20).reverse().map((_,i)=>i+1));
-}
-function renderReviews(items){
-  const list=$("review-list");
-  if(!Array.isArray(items)||!items.length){
-    list.innerHTML='<div class="empty">No pending approvals reported by the API.</div>';
-    setText("review-note","No pending reviews");return;
+
+/* SMOOTH VIEW EXPANSION SWITCHER */
+function switchView(view, updateHash = true) {
+  const target = VIEW_META[view] ? view : "home";
+  document.body.setAttribute("data-view", target);
+
+  // Update nav active states
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.viewTarget === target);
+  });
+
+  // Update console rail highlight
+  document.querySelectorAll(".rail-btn[data-switch]").forEach(btn => {
+    const isMatch = btn.dataset.switch === target || (target === "home" && btn.dataset.switch === "operations");
+    btn.classList.toggle("selected", isMatch);
+  });
+
+  // Update focused header text
+  setText("focus-title", VIEW_META[target].title);
+  setText("focus-sub", VIEW_META[target].sub);
+
+  // Trigger smooth entrance animation on visible blocks
+  document.querySelectorAll(".view-block").forEach(block => {
+    block.classList.remove("is-entering");
+    void block.offsetWidth; // force reflow for crisp replay
+    block.classList.add("is-entering");
+  });
+
+  if (updateHash) {
+    history.replaceState(null, "", target === "home" ? "#home" : "#" + target);
   }
-  setText("review-note","Awaiting human decision");
-  list.innerHTML=items.map(item=>{
-    const id=item.seq;
-    return `<div class="review-row"><span><strong>${safe(item.agent||"Agent")}</strong> · ${safe(item.kind||item.action||"Action")} <span style="color:var(--muted)">#${safe(id)}</span></span><span style="display:flex;gap:6px"><button onclick="decideReview('${safe(id)}','approve')">Approve</button><button onclick="decideReview('${safe(id)}','reject')">Reject</button></span></div>`;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// Bind nav buttons & quick switches
+document.querySelectorAll("[data-view-target]").forEach(btn => {
+  btn.addEventListener("click", () => switchView(btn.dataset.viewTarget));
+});
+document.querySelectorAll("[data-switch]").forEach(el => {
+  el.addEventListener("click", e => {
+    e.preventDefault();
+    switchView(el.dataset.switch);
+  });
+});
+
+/* COMMAND PALETTE MODAL */
+function openCmd() { $("cmd-backdrop").classList.add("open"); }
+function closeCmd() { $("cmd-backdrop").classList.remove("open"); }
+
+$("btn-cmd").addEventListener("click", openCmd);
+$("rail-cmd").addEventListener("click", openCmd);
+$("cmd-close").addEventListener("click", closeCmd);
+$("cmd-backdrop").addEventListener("click", e => { if (e.target === $("cmd-backdrop")) closeCmd(); });
+
+document.querySelectorAll(".cmd-item").forEach(item => {
+  item.addEventListener("click", () => {
+    closeCmd();
+    if (item.dataset.cmdView) switchView(item.dataset.cmdView);
+    if (item.dataset.cmdAction === "sync") triggerManualSync();
+    if (item.dataset.cmdAction === "verify") triggerVerifyIntegrity();
+  });
+});
+
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+    e.preventDefault();
+    $("cmd-backdrop").classList.contains("open") ? closeCmd() : openCmd();
+  } else if (e.key === "Escape") {
+    if ($("cmd-backdrop").classList.contains("open")) {
+      closeCmd();
+    } else if (document.body.getAttribute("data-view") !== "home") {
+      switchView("home");
+    }
+  }
+});
+
+/* TOP-RIGHT ACTION BUTTONS */
+async function triggerManualSync() {
+  const btn = $("btn-sync");
+  btn.classList.add("is-busy");
+  await refresh();
+  setTimeout(() => btn.classList.remove("is-busy"), 500);
+  toast("Telemetry synced with AEGIS engine.");
+}
+
+async function triggerVerifyIntegrity() {
+  const btn = $("btn-verify");
+  btn.classList.add("is-busy");
+  try {
+    const verify = await getJSON("/audit/verify");
+    const ok = verify.intact !== false && verify.valid !== false;
+    setText("metric-integrity", ok ? "INTACT" : "CHECK");
+    $("metric-integrity").style.color = ok ? "var(--green)" : "var(--red)";
+    setText("integrity-hint", verify.message || (ok ? "Audit chain verified" : "Audit verification reported an issue"));
+    toast(ok ? "Audit chain verified: INTACT" : "Audit integrity issue detected!");
+  } catch (err) {
+    toast("Integrity check failed: " + err.message);
+  } finally {
+    setTimeout(() => btn.classList.remove("is-busy"), 450);
+  }
+}
+
+$("btn-sync").addEventListener("click", triggerManualSync);
+$("btn-verify").addEventListener("click", triggerVerifyIntegrity);
+
+/* CHARTS & RENDERERS */
+function makeBars(svgId, values, color = "#00dff5") {
+  const svg = $(svgId); if (!svg) return;
+  const max = Math.max(1, ...values);
+  svg.innerHTML = values.map((v, i) => {
+    const h = Math.max(2, (v / max) * 48), x = 4 + i * 7.1;
+    return `<rect x="${x}" y="${55 - h}" width="4.5" height="${h}" rx="1" fill="${color}" opacity="${.45 + (v / max) * .55}"/>`;
   }).join("");
 }
-async function decideReview(id,decision){
-  const token=window.prompt("Enter the AEGIS review token to submit this decision:");
-  if(!token)return;
-  try{
-    const response=await fetch(decision==="approve"?"/approve":"/reject",{
-      method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
-      body:JSON.stringify({review_seq:Number(id)})
-    });
-    const data=await response.json().catch(()=>({}));
-    if(!response.ok)throw new Error(data.detail||data.error||"Request rejected");
-    toast("Review decision submitted.");refresh();
-  }catch(err){toast("Review failed: "+err.message);}
+function makeSpark(svgId, values) {
+  const svg = $(svgId); if (!svg) return;
+  const max = Math.max(1, ...values), min = Math.min(0, ...values);
+  const pts = values.map((v, i) => `${i * (180 / Math.max(1, values.length - 1))},${32 - (v - min) / (max - min || 1) * 27}`).join(" ");
+  svg.innerHTML = `<polyline points="${pts}" fill="none" stroke="#00e5f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
 }
-async function getJSON(path){
-  const response=await fetch(path,{cache:"no-store"});
-  if(!response.ok)throw new Error(path+" returned "+response.status);
+function renderVerdicts(verdicts) {
+  const entries = Object.entries(verdicts || {});
+  const total = entries.reduce((s, [, v]) => s + Number(v || 0), 0);
+  $("verdict-bars").innerHTML = entries.length ? entries.map(([k, v], i) => {
+    const y = 7 + i * 24, w = Number(v) / Math.max(1, total) * 125;
+    return `<text x="0" y="${y + 10}" fill="#a9c4cc" font-size="9">${safe(k)}</text><rect x="68" y="${y}" width="${Math.max(2, w)}" height="13" rx="3" fill="${verdictColor(k)}"/><text x="202" y="${y + 10}" fill="#eafcff" text-anchor="end" font-size="9">${number(v)}</text>`;
+  }).join("") : `<text x="5" y="25" fill="#91aab4" font-size="10">No verdict data yet</text>`;
+  setText("verdict-kinds", entries.length);
+}
+function renderRisk(risks) {
+  const entries = Object.entries(risks || {});
+  const colors = ["#00dff5", "#00e6ad", "#ffbd55", "#ff5476"];
+  $("risk-bars").innerHTML = entries.length ? entries.map(([k, v], i) => {
+    const pct = Number(v) / Math.max(1, entries.reduce((s, [, n]) => s + Number(n || 0), 0)) * 100;
+    return `<div style="margin:9px 0"><div style="display:flex;justify-content:space-between;font-size:9px;color:#b8d0d7;margin-bottom:5px"><span>${safe(k)}</span><span>${number(v)}</span></div><div style="height:5px;background:#102a33;border-radius:8px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${colors[i % colors.length]}"></div></div></div>`;
+  }).join("") : `<div class="empty">No risk data recorded</div>`;
+}
+function renderAgents(agents) {
+  const names = Array.isArray(agents) ? agents : Object.keys(agents || {});
+  setText("agent-count", names.length); setText("agents-side", names.length);
+  const html = names.length ? names.map(n => `<span class="agent-pill">${safe(n)}</span>`).join("") : `<span class="empty">No agent names recorded yet</span>`;
+  $("agent-list").innerHTML = html; $("agent-pills").innerHTML = html;
+  makeSpark("agent-chart", names.map((_, i) => i + 1));
+}
+function renderActivity(entries) {
+  const list = $("activity-list");
+  if (!Array.isArray(entries) || !entries.length) { list.innerHTML = '<div class="empty">No audit activity recorded yet.</div>'; return; }
+  list.innerHTML = entries.slice(0, 12).map(e => {
+    const verdict = String(e.verdict || "UNKNOWN").toUpperCase();
+    return `<div class="activity"><span class="dot" style="background:${verdictColor(verdict)}"></span><span><strong>${safe(e.agent || "Unknown agent")}</strong> · ${safe(e.kind || "action")} <span class="meta">/ ${safe(e.rule || "engine")}</span></span><span style="color:${verdictColor(verdict)}">${safe(verdict)}</span></div>`;
+  }).join("");
+  setText("audit-count", number(entries.length));
+  makeSpark("activity-chart", entries.slice(0, 20).reverse().map((_, i) => i + 1));
+}
+function renderReviews(items) {
+  const list = $("review-list");
+  if (!Array.isArray(items) || !items.length) {
+    list.innerHTML = '<div class="empty">No pending approvals reported by the API.</div>';
+    setText("review-note", "No pending reviews"); return;
+  }
+  setText("review-note", "Awaiting human decision");
+  list.innerHTML = items.map(item => {
+    const id = item.seq;
+    return `<div class="review-row"><span><strong>${safe(item.agent || "Agent")}</strong> · ${safe(item.kind || item.action || "Action")} <span style="color:var(--muted)">#${safe(id)}</span></span><span style="display:flex;gap:6px"><button onclick="decideReview('${safe(id)}','approve')">Approve</button><button onclick="decideReview('${safe(id)}','reject')">Reject</button></span></div>`;
+  }).join("");
+}
+async function decideReview(id, decision) {
+  const token = window.prompt("Enter the AEGIS review token to submit this decision:");
+  if (!token) return;
+  try {
+    const response = await fetch(decision === "approve" ? "/approve" : "/reject", {
+      method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({ review_seq: Number(id) })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || data.error || "Request rejected");
+    toast("Review decision submitted."); refresh();
+  } catch (err) { toast("Review failed: " + err.message); }
+}
+async function getJSON(path) {
+  const response = await fetch(path, { cache: "no-store" });
+  if (!response.ok) throw new Error(path + " returned " + response.status);
   return response.json();
 }
-async function refresh(){
-  try{
-    const [stats,audit,pending]=await Promise.all([
-      getJSON("/stats"),getJSON("/audit"),getJSON("/pending")
+async function refresh() {
+  try {
+    const [stats, audit, pending, agentStatusRes] = await Promise.all([
+      getJSON("/stats"), getJSON("/audit"), getJSON("/pending"),
+      getJSON("/agents/status").catch(() => null)
     ]);
-    const entries=Array.isArray(audit)?audit:(audit.entries||audit.records||[]);
-    const verdicts=stats.verdicts||{};
-    const total=Number(stats.total??entries.length??0);
-    const blocked=Number(verdicts.BLOCK??verdicts.block??0);
-    const review=Number(verdicts.REVIEW??verdicts.review??0);
-    const pendingItems=Array.isArray(pending)?pending:(pending.pending||pending.items||[]);
-    setText("connection","Engine Connected");setText("footer-status","AEGIS API Online");
-    setText("decision-total",number(total));setText("metric-total",number(total));
-    setText("metric-blocked",number(blocked));setText("metric-review",number(review));
-    setText("pending-count",number(pendingItems.length));
-    setText("blocked-total",number(blocked)+" blocked");
-    setText("blocked-percent",total?((blocked/total)*100).toFixed(1)+"%":"0%");
-    setText("decision-total",number(total));
-    setText("integrity-hint",stats.integrity_message||"Audit verification status");
-    const intact=stats.log_intact;
-    setText("metric-integrity",intact===true?"INTACT":intact===false?"CHECK":"—");
-    $("metric-integrity").style.fontSize="21px";
-    $("metric-integrity").style.color=intact===true?"var(--green)":intact===false?"var(--red)":"var(--text)";
-    renderVerdicts(verdicts);renderRisk(stats.risks||{});
-    renderAgents(stats.agents||{});
+    const entries = Array.isArray(audit) ? audit : (audit.entries || audit.records || []);
+    const verdicts = stats.verdicts || {};
+    const total = Number(stats.total ?? entries.length ?? 0);
+    const blocked = Number(verdicts.BLOCK ?? verdicts.block ?? 0);
+    const review = Number(verdicts.REVIEW ?? verdicts.review ?? 0);
+    const pendingItems = Array.isArray(pending) ? pending : (pending.entries || pending.pending || pending.items || []);
+    setText("connection", "Engine Connected"); setText("footer-status", "AEGIS API Online");
+    setText("decision-total", number(total)); setText("metric-total", number(total));
+    setText("metric-blocked", number(blocked)); setText("metric-review", number(review));
+    setText("pending-count", number(pendingItems.length));
+    setText("blocked-total", number(blocked) + " blocked");
+    setText("blocked-percent", total ? ((blocked / total) * 100).toFixed(1) + "%" : "0%");
+    setText("integrity-hint", stats.integrity_message || "Audit verification status");
+    const intact = stats.log_intact;
+    setText("metric-integrity", intact === true ? "INTACT" : intact === false ? "CHECK" : "—");
+    $("metric-integrity").style.fontSize = "21px";
+    $("metric-integrity").style.color = intact === true ? "var(--green)" : intact === false ? "var(--red)" : "var(--text)";
+    renderVerdicts(verdicts); renderRisk(stats.risks || {});
+    renderAgents(stats.agents || {});
+    updateAgentNetwork(agentStatusRes, stats.agents || {});
     renderActivity(entries);
     renderReviews(pendingItems);
-    const vals=Object.values(verdicts).map(Number);
-    makeBars("decision-chart",vals.length?vals:[0]);
-    try{
-      const verify=await getJSON("/audit/verify");
-      if(verify.intact===false||verify.valid===false){
-        setText("metric-integrity","CHECK");$("metric-integrity").style.color="var(--red)";
-        setText("integrity-hint",verify.message||"Audit verification reported an issue");
+    const vals = Object.values(verdicts).map(Number);
+    makeBars("decision-chart", vals.length ? vals : [0]);
+    try {
+      const verify = await getJSON("/audit/verify");
+      if (verify.intact === false || verify.valid === false) {
+        setText("metric-integrity", "CHECK"); $("metric-integrity").style.color = "var(--red)";
+        setText("integrity-hint", verify.message || "Audit verification reported an issue");
       }
-    }catch(e){}
-    setText("last-updated","Last updated: "+new Date().toLocaleTimeString());
-  }catch(err){
-    setText("connection","API Unavailable");setText("footer-status","API Connection Error");
-    setText("last-updated","Update failed: "+err.message);
+    } catch (e) {}
+    setText("last-updated", "Last updated: " + new Date().toLocaleTimeString());
+  } catch (err) {
+    setText("connection", "API Unavailable"); setText("footer-status", "API Connection Error");
+    setText("last-updated", "Update failed: " + err.message);
   }
 }
-function tick(){
-  setText("clock",new Date().toLocaleTimeString());
-}
-tick();setInterval(tick,1000);refresh();setInterval(refresh,5000);
+
+/* INTERACTIVE FLOATING AGENT TOPOLOGY GRAPH (REPLACES STATIC GLOBE) */
+(function initAgentNetwork() {
+  const wrap = $("agent-net-wrap");
+  const canvas = $("agent-net-canvas");
+  const tooltip = $("agent-net-tooltip");
+  if (!wrap || !canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  let W = 320, H = 270, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let nodes = [];
+  let dragged = null;
+  let hovered = null;
+  let pointer = { x: 0, y: 0, down: false };
+  let t = 0;
+
+  const STATUS_COLOR = {
+    running:      { stroke: "#00e6ad", glow: "rgba(0, 230, 173, 0.55)", line: "rgba(0, 230, 173, 0.65)" },
+    stopped:      { stroke: "#7fa8b8", glow: "rgba(0, 218, 239, 0.25)", line: "rgba(127, 168, 184, 0.42)" },
+    stale:        { stroke: "#ffbd55", glow: "rgba(255, 189, 85, 0.45)", line: "rgba(255, 189, 85, 0.52)" },
+    error:        { stroke: "#ff5476", glow: "rgba(255, 84, 118, 0.55)", line: "rgba(255, 84, 118, 0.60)" },
+    disconnected: { stroke: "#ff5476", glow: "rgba(255, 84, 118, 0.55)", line: "rgba(255, 84, 118, 0.60)" }
+  };
+
+  function prettyName(raw) {
+    return String(raw || "Agent")
+      .replace(/[-_]+/g, " ")
+      .replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  function resize() {
+    const rect = wrap.getBoundingClientRect();
+    W = Math.max(240, Math.round(rect.width || 320));
+    H = Math.max(210, Math.round(rect.height || 270));
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    layoutTargets();
+  }
+
+  function layoutTargets() {
+    const cx = W / 2;
+    const cy = H / 2 + 8;
+    const radiusX = Math.min(W * 0.34, 132);
+    const radiusY = Math.min(H * 0.31, 88);
+    const agents = nodes.filter(n => !n.isCore);
+    const core = nodes.find(n => n.isCore);
+    if (core) {
+      core.tx = cx;
+      core.ty = cy;
+      if (!core.init) { core.x = cx; core.y = cy; core.init = true; }
+    }
+    agents.forEach((node, i) => {
+      const angle = (Math.PI * 2 * i / Math.max(agents.length, 1)) - Math.PI / 2;
+      node.tx = cx + Math.cos(angle) * radiusX;
+      node.ty = cy + Math.sin(angle) * radiusY;
+      if (!node.init) { node.x = node.tx; node.y = node.ty; node.init = true; }
+    });
+  }
+
+  window.updateAgentNetwork = function(agentStatusRes, statsAgents) {
+    const liveList = Array.isArray(agentStatusRes?.agents) ? agentStatusRes.agents : [];
+    const statsMap = (statsAgents && typeof statsAgents === "object" && !Array.isArray(statsAgents)) ? statsAgents : {};
+    const merged = new Map();
+
+    liveList.forEach(a => {
+      const id = String(a.agent_id || a.name || "agent");
+      merged.set(id, {
+        id,
+        name: a.name || prettyName(id),
+        status: String(a.status || "stopped").toLowerCase(),
+        count: Number(statsMap[id] ?? statsMap[a.name] ?? a.event_count ?? 0)
+      });
+    });
+
+    Object.entries(statsMap).forEach(([k, v]) => {
+      if (!merged.has(k)) {
+        merged.set(k, { id: k, name: prettyName(k), status: "running", count: Number(v || 0) });
+      }
+    });
+
+    if (merged.size === 0) {
+      ["Database Agent", "DevOps Agent", "SOC Agent"].forEach(name => {
+        const id = name.toLowerCase().replace(/\s+/g, "-");
+        merged.set(id, { id, name, status: "stopped", count: 0 });
+      });
+    }
+
+    const prevById = new Map(nodes.map(n => [n.id, n]));
+    const nextNodes = [];
+
+    const prevCore = prevById.get("aegis-core");
+    nextNodes.push(prevCore ? { ...prevCore } : {
+      id: "aegis-core", name: "AEGIS", isCore: true, r: 28,
+      x: W / 2, y: H / 2, tx: W / 2, ty: H / 2, vx: 0, vy: 0, phase: 0, init: false
+    });
+
+    let idx = 0;
+    merged.forEach(item => {
+      const prev = prevById.get(item.id);
+      nextNodes.push(prev ? {
+        ...prev, name: item.name, status: item.status, count: item.count
+      } : {
+        id: item.id, name: item.name, status: item.status, count: item.count,
+        isCore: false, r: 19, x: W / 2, y: H / 2, tx: W / 2, ty: H / 2,
+        vx: 0, vy: 0, phase: idx * 1.9 + 0.7, init: false
+      });
+      idx++;
+    });
+
+    nodes = nextNodes;
+    layoutTargets();
+  };
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  function hitTest(x, y) {
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      const n = nodes[i];
+      if (Math.hypot(x - n.x, y - n.y) <= n.r + 7) return n;
+    }
+    return null;
+  }
+
+  canvas.addEventListener("pointerdown", e => {
+    const pos = getPos(e);
+    pointer = { ...pos, down: true };
+    const hit = hitTest(pos.x, pos.y);
+    if (hit) {
+      dragged = hit;
+      canvas.setPointerCapture(e.pointerId);
+    }
+  });
+
+  canvas.addEventListener("pointermove", e => {
+    const pos = getPos(e);
+    pointer.x = pos.x; pointer.y = pos.y;
+    if (dragged) {
+      dragged.x = Math.max(dragged.r + 8, Math.min(W - dragged.r - 8, pos.x));
+      dragged.y = Math.max(dragged.r + 22, Math.min(H - dragged.r - 18, pos.y));
+      dragged.vx = 0; dragged.vy = 0;
+    } else {
+      hovered = hitTest(pos.x, pos.y);
+      canvas.style.cursor = hovered ? "pointer" : "grab";
+    }
+    if (hovered || dragged) {
+      const target = dragged || hovered;
+      tooltip.innerHTML = target.isCore
+        ? `<strong>AEGIS Governance Core</strong>Central policy & audit engine`
+        : `<strong>${safe(target.name)}</strong>Status: ${safe(prettyName(target.status))}${target.count ? " · " + number(target.count) + " events" : ""}`;
+      tooltip.style.left = target.x + "px";
+      tooltip.style.top = (target.y - target.r) + "px";
+      tooltip.classList.add("show");
+    } else {
+      tooltip.classList.remove("show");
+    }
+  });
+
+  function releaseDrag() {
+    dragged = null;
+    pointer.down = false;
+  }
+  canvas.addEventListener("pointerup", releaseDrag);
+  canvas.addEventListener("pointercancel", releaseDrag);
+  canvas.addEventListener("pointerleave", () => {
+    if (!dragged) { hovered = null; tooltip.classList.remove("show"); }
+  });
+
+  function draw() {
+    t += 0.018;
+    ctx.clearRect(0, 0, W, H);
+
+    const core = nodes.find(n => n.isCore);
+    if (!core) { requestAnimationFrame(draw); return; }
+
+    // Smooth spring + gentle floating motion
+    nodes.forEach(n => {
+      if (n === dragged) return;
+      const floatX = n.isCore ? Math.sin(t * 0.9) * 2.2 : Math.cos(t * 1.1 + n.phase) * 5.5;
+      const floatY = n.isCore ? Math.cos(t * 1.1) * 2.5 : Math.sin(t * 1.3 + n.phase) * 5.0;
+      const gx = n.tx + floatX;
+      const gy = n.ty + floatY;
+      n.vx = (n.vx + (gx - n.x) * 0.045) * 0.82;
+      n.vy = (n.vy + (gy - n.y) * 0.045) * 0.82;
+      n.x += n.vx;
+      n.y += n.vy;
+    });
+
+    // Draw connecting links & traveling data pulses
+    nodes.forEach(n => {
+      if (n.isCore) return;
+      const style = STATUS_COLOR[n.status] || STATUS_COLOR.stopped;
+      const isHot = hovered === n || dragged === n || hovered === core;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(core.x, core.y);
+      ctx.lineTo(n.x, n.y);
+      ctx.strokeStyle = style.line;
+      ctx.lineWidth = isHot ? 2.6 : 1.7;
+      ctx.stroke();
+
+      // Animated pulse dot along active links
+      const prog = (t * 0.45 + n.phase * 0.2) % 1;
+      const px = core.x + (n.x - core.x) * prog;
+      const py = core.y + (n.y - core.y) * prog;
+      ctx.beginPath();
+      ctx.arc(px, py, n.status === "running" ? 2.8 : 2.0, 0, Math.PI * 2);
+      ctx.fillStyle = style.stroke;
+      ctx.shadowColor = style.stroke;
+      ctx.shadowBlur = 8;
+      ctx.fill();
+      ctx.restore();
+    });
+
+    // Draw agent nodes
+    nodes.forEach(n => {
+      if (n.isCore) return;
+      const style = STATUS_COLOR[n.status] || STATUS_COLOR.stopped;
+      const isHot = hovered === n || dragged === n;
+      const r = isHot ? n.r + 2.5 : n.r;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(7, 30, 39, 0.94)";
+      ctx.shadowColor = style.glow;
+      ctx.shadowBlur = isHot ? 20 : 12;
+      ctx.fill();
+      ctx.lineWidth = isHot ? 2.5 : 2;
+      ctx.strokeStyle = style.stroke;
+      ctx.stroke();
+      ctx.restore();
+
+      // Label below node
+      ctx.save();
+      ctx.font = (isHot ? "600 11px " : "500 10.5px ") + "Inter, Arial, sans-serif";
+      ctx.fillStyle = isHot ? "#ffffff" : "#d8f4f8";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillText(n.name, n.x, n.y + r + 7);
+      ctx.restore();
+    });
+
+    // Draw central AEGIS core hub
+    const coreHot = hovered === core || dragged === core;
+    const cr = coreHot ? core.r + 2.5 : core.r;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(core.x, core.y, cr, 0, Math.PI * 2);
+    const grad = ctx.createRadialGradient(core.x, core.y - 6, 4, core.x, core.y, cr);
+    grad.addColorStop(0, "#0b4b59");
+    grad.addColorStop(1, "#041c25");
+    ctx.fillStyle = grad;
+    ctx.shadowColor = "rgba(0, 229, 245, 0.55)";
+    ctx.shadowBlur = coreHot ? 26 : 18;
+    ctx.fill();
+    ctx.lineWidth = 2.6;
+    ctx.strokeStyle = "#00e5f5";
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.font = "700 11.5px Inter, Arial, sans-serif";
+    ctx.fillStyle = "#eefbff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("AEGIS", core.x, core.y + 0.5);
+    ctx.restore();
+
+    requestAnimationFrame(draw);
+  }
+
+  new ResizeObserver(resize).observe(wrap);
+  window.updateAgentNetwork(null, {});
+  resize();
+  requestAnimationFrame(draw);
+})();
+
+function tick() { setText("clock", new Date().toLocaleTimeString()); }
+
+// Respect initial URL hash if user reloads on a specific section
+const initialHash = location.hash.replace("#", "").toLowerCase();
+if (VIEW_META[initialHash]) switchView(initialHash, false);
+
+tick(); setInterval(tick, 1000); refresh(); setInterval(refresh, 5000);
 </script>
 </body>
 </html>
